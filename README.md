@@ -1,4 +1,4 @@
-# LubaPiano 0.1.2
+# LubaPiano 0.1.3
 
 První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vstupem z Kurzweil M90.
 
@@ -28,3 +28,15 @@ První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vs
 - Automatické rozpoznání oktávy v režimu názvů (tam se zkouší jen název noty).
 
 Všechno běží v prohlížeči bez externího API. Pouze testovací statistiky se ukládají do localStorage.
+
+## Lokální práce a patche
+
+- V SPCK otevři `dist/index.html` a prohlédni projekt na větvi s patchem.
+- První patch je větev `oprava-001-rozlozeni`. Do `main` se dostane až po otestování a schválení PR.
+- Logika rozpoznání not má jednoduché testy bez instalace závislostí: `node --test tests/notes.test.mjs`.
+- Číslo verze měň v `dist/index.html`, `dist/sw.js`, `README.md` a `CHANGELOG.md`.
+- Produkční PWA na soukromém webu se nasazuje samostatně až z odsouhlasené verze.
+
+## Více PWA na localhostu
+
+LubaPiano má vlastní manifest `id` a svůj cache prefix. Zůstává instalovatelnou PWA (`display: standalone`) s offline soubory. Pro skutečně oddělené aplikace **nestačí samotné `id`**: LubaWallet a LubaPiano musí používat odlišný origin (např. jiný localhost port) nebo neprolínající se rozsahy URL a service workerů. Pokud obě aplikace běží v kořeni stejného localhostu a portu, Android může stále otevřít adresu pod nainstalovanou LubaWallet. Nikdy kvůli tomu nemaž data LubaWallet.

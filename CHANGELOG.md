@@ -1,5 +1,14 @@
 # LubaPiano – historie verzí
 
+## 0.1.3 – patch 001 (kandidát k testování)
+
+- Zmenšené notové klíče a posunutá hrací čára pro lepší oddělení první noty.
+- Na mobilu se po zahájení tréninku zapne kompaktní režim soustředění; nastavení lze vrátit tlačítkem Zpět.
+- Na úzkých obrazovkách se zmenší mezery a výška virtuální klaviatury. V landscape režimu jsou noty a dotyková klaviatura vedle sebe.
+- Chybná odpověď nyní napíše, jakou notu aplikace opravdu zachytila. Pokračovací režim zobrazí i správnou notu.
+- Porovnávání názvů not pro dotyk a přesných MIDI tónů je sjednocené v jedné funkci.
+- PWA má vlastní identifikátor v manifestu. Service worker odstraňuje pouze staré cache LubaPiano, nikdy cache jiných aplikací na stejném localhostu.
+
 ## 0.1.2 (2026-11-27)
 
 - Číslo verze je vidět přímo vedle názvu LubaPiano i na mobilu.
