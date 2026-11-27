@@ -7,6 +7,7 @@
 - Na úzkých obrazovkách se zmenší mezery a výška virtuální klaviatury. V landscape režimu jsou noty a dotyková klaviatura vedle sebe.
 - Chybná odpověď nyní napíše, jakou notu aplikace opravdu zachytila. Pokračovací režim zobrazí i správnou notu.
 - Porovnávání názvů not pro dotyk a přesných MIDI tónů je sjednocené v jedné funkci.
+- PWA má vlastní identifikátor v manifestu. Service worker odstraňuje pouze staré cache LubaPiano, nikdy cache jiných aplikací na stejném localhostu.
 
 ## 0.1.2 (2026-11-27)
 

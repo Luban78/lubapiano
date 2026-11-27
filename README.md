@@ -36,3 +36,7 @@ Všechno běží v prohlížeči bez externího API. Pouze testovací statistiky
 - Logika rozpoznání not má jednoduché testy bez instalace závislostí: `node --test tests/notes.test.mjs`.
 - Číslo verze měň v `dist/index.html`, `dist/sw.js`, `README.md` a `CHANGELOG.md`.
 - Produkční PWA na soukromém webu se nasazuje samostatně až z odsouhlasené verze.
+
+## Více PWA na localhostu
+
+LubaPiano má vlastní manifest `id` a svůj cache prefix. Zůstává instalovatelnou PWA (`display: standalone`) s offline soubory. Pro skutečně oddělené aplikace **nestačí samotné `id`**: LubaWallet a LubaPiano musí používat odlišný origin (např. jiný localhost port) nebo neprolínající se rozsahy URL a service workerů. Pokud obě aplikace běží v kořeni stejného localhostu a portu, Android může stále otevřít adresu pod nainstalovanou LubaWallet. Nikdy kvůli tomu nemaž data LubaWallet.

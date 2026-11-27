@@ -1,10 +1,12 @@
 const CACHE = "lubapiano-v0-1-3";
+const CACHE_PREFIX = "lubapiano-";
 const ASSETS = ["./", "./index.html", "./style.css", "./app.js", "./manifest.webmanifest", "./icons/lubapiano.svg", "./icons/lubapiano-192.png", "./icons/lubapiano-512.png"];
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
 self.addEventListener("activate", (event) => {
-  event.waitUntil(caches.keys().then((names) => Promise.all(names.filter((name) => name !== CACHE).map((name) => caches.delete(name)))).then(() => self.clients.claim()));
+  // Nesahat na cache jiných aplikací, které sdílejí localhost a port.
+  event.waitUntil(caches.keys().then((names) => Promise.all(names.filter((name) => name.startsWith(CACHE_PREFIX) && name !== CACHE).map((name) => caches.delete(name)))).then(() => self.clients.claim()));
 });
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
