@@ -27,6 +27,9 @@ const ui = {
   tempoMinus: document.getElementById("tempoMinus"),
   tempoPlus: document.getElementById("tempoPlus"),
   quickTempoValue: document.getElementById("quickTempoValue"),
+  quickTempo: document.getElementById("quickTempo"),
+  topActions: document.getElementById("topActions"),
+  practiceHeadingRight: document.getElementById("practiceHeadingRight"),
   preview: document.getElementById("previewRange"),
   previewValue: document.getElementById("previewValue"),
   clefCaption: document.getElementById("clefCaption"),
@@ -89,6 +92,10 @@ function omezTempo(tempo) {
 
 function jeKompaktniDisplej(sirka, vyska) {
   return sirka <= 760 || (sirka > vyska && vyska <= 650);
+}
+
+function jenJednaOktava(sirkaKlaviatury, sirkaOkna, vyskaOkna) {
+  return sirkaKlaviatury < 616 || jeKompaktniDisplej(sirkaOkna, vyskaOkna);
 }
 
 // Na telefonu se noty přizpůsobí šířce. Aktuální nota a zvolený výhled
@@ -392,8 +399,9 @@ function vytvorKlaviaturu() {
   const zacatek = volba.clef === "treble" ? 60 : 36;
   ui.keyboard.replaceChildren();
   const sirka = ui.keyboard.clientWidth || 660;
-  // Na úzkém displeji ukaž celou jedinou oktávu bez horizontálního posouvání.
-  const kompaktni = sirka < 616;
+  // V mobilním tréninku zůstane jedna oktáva i na šířku: sedm velkých bílých
+  // kláves se ovládá mnohem přesněji než čtrnáct úzkých.
+  const kompaktni = jenJednaOktava(sirka, window.innerWidth, window.innerHeight);
   const konec = zacatek + (kompaktni ? 11 : 23);
   const bileW = sirka / (kompaktni ? 7 : 14);
   let bilyIndex = 0;
@@ -591,11 +599,23 @@ function nastavSoustredeni(aktivni) {
   ui.focus.setAttribute("aria-pressed", String(aktivni));
   ui.focus.title = aktivni ? "Zobrazit celé ovládání" : "Soustředěný režim";
   ui.focus.innerHTML = aktivni ? "⊟ <span class=\"focus-label\">Zpět</span>" : "⛶ <span class=\"focus-label\">Soustředění</span>";
+  prelozTempo();
   if (aktivni && jeKompaktniDisplej(window.innerWidth, window.innerHeight)) window.scrollTo(0, 0);
   requestAnimationFrame(() => {
     vykresliOsnovu();
     vytvorKlaviaturu();
   });
+}
+
+function prelozTempo() {
+  // Na krátké landscape obrazovce patří rychlost do horní lišty.
+  // Díky tomu zůstane maximum místa pro osnovu nad celou klaviaturou.
+  const naSirku = ui.shell.classList.contains("focus") && window.innerWidth >= 560 && window.innerWidth > window.innerHeight && window.innerHeight <= 650;
+  const cil = naSirku ? ui.topActions : ui.practiceHeadingRight;
+  if (ui.quickTempo.parentElement !== cil) {
+    if (naSirku) cil.prepend(ui.quickTempo);
+    else cil.append(ui.quickTempo);
+  }
 }
 
 function nastavTempo(tempo) {
@@ -635,6 +655,7 @@ function pripravOvladani() {
     nastavSoustredeni(!ui.shell.classList.contains("focus"));
   });
   window.addEventListener("resize", () => {
+    prelozTempo();
     vykresliOsnovu();
     vytvorKlaviaturu();
     aktualizujTlacitkoOtoceni();

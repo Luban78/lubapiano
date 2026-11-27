@@ -1,5 +1,13 @@
 # LubaPiano – historie verzí
 
+## 0.1.4.2 – landscape jako skutečné piano
+
+- Landscape v režimu Soustředění má osnovu nahoře a klaviaturu dole přes celou šířku, nikoli dva úzké sloupce.
+- Mobilní dotyková klaviatura nyní drží jedinou oktávu i na širokém displeji, takže bílé klávesy mají velké dotykové plochy.
+- Rychlé tempo se v landscape přesune do horní lišty a po návratu na výšku zpět k nadpisu cvičení.
+- Zpětná vazba zůstává viditelná v kompaktním proužku nad ovládáním a nezabírá další výšku.
+- Zachováno tlačítko otočení, MIDI a všechny dosavadní tréninkové režimy.
+
 ## 0.1.4.1 – oprava landscape a tlačítko otočení
 
 - Opravené soustředěné rozložení i pro telefony, jejichž CSS šířka v landscape překročí 760 px.

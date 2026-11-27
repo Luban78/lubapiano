@@ -26,11 +26,32 @@ test("automatické soustředění funguje i na širokém telefonu", () => {
   assert.equal(kompaktni(1200, 800), false);
 });
 
-test("na širokém telefonu se aktivuje celoplošný landscape režim", () => {
+test("landscape má osnovu nad klaviaturou přes celou šířku", () => {
   assert.match(css, /\(orientation: landscape\) and \(max-height: 650px\)/);
-  assert.match(css, /\.app-shell\.focus \.practice-area \{ display: contents; \}/);
-  assert.match(css, /\.app-shell\.focus \.input-card \{ grid-column: 2; grid-row: 1 \/ 3;/);
+  assert.match(css, /\.app-shell\.focus main \{ display: flex; flex-direction: column; gap: 4px;/);
+  assert.match(css, /\.app-shell\.focus \.practice-area \{ position: relative; display: flex; flex: 1 1 auto;/);
+  assert.match(css, /\.app-shell\.focus \.input-card \{ width: 100%; flex: 0 0 auto;/);
+  assert.match(css, /\.app-shell\.focus \.virtual-keyboard \{ width: 100%;/);
+  assert.doesNotMatch(css, /\.app-shell\.focus \.practice-area \{ display: contents; \}/);
   assert.match(css, /\.app-shell\.focus \.update-notice \{ display: none; \}/);
+});
+
+test("tempo se na šířku přesune do horní lišty a po návratu vrátí nad osnovu", () => {
+  const tempo = {parentElement: null};
+  const topActions = {prepend: (node) => { node.parentElement = topActions; }};
+  const headingRight = {append: (node) => { node.parentElement = headingRight; }};
+  tempo.parentElement = headingRight;
+  const window = {innerWidth: 900, innerHeight: 400};
+  const preloz = funkce("prelozTempo", {
+    ui: {quickTempo: tempo, topActions, practiceHeadingRight: headingRight, shell: {classList: {contains: () => true}}},
+    window,
+  });
+  preloz();
+  assert.equal(tempo.parentElement, topActions);
+  window.innerWidth = 390;
+  window.innerHeight = 820;
+  preloz();
+  assert.equal(tempo.parentElement, headingRight);
 });
 
 test("otočení tlačítkem vyžádá fullscreen před zamknutím orientace", async () => {

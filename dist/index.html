@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#082630" />
   <meta name="description" content="LubaPiano – uč se poznávat noty, číst dopředu a hrát na skutečném pianu." />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>LubaPiano 0.1.4.1 · Čti noty, hraj hudbu</title>
+  <title>LubaPiano 0.1.4.2 · Čti noty, hraj hudbu</title>
   <link rel="icon" href="./icons/lubapiano.svg" type="image/svg+xml" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./style.css" />
@@ -18,11 +18,11 @@
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">♫</div>
         <div>
-          <h1>Luba<span>Piano</span><small class="brand-version">0.1.4.1</small></h1>
+          <h1>Luba<span>Piano</span><small class="brand-version">0.1.4.2</small></h1>
           <p>Čti noty. Hraj hudbu.</p>
         </div>
       </div>
-      <div class="top-actions">
+      <div class="top-actions" id="topActions">
         <button id="rotateButton" type="button" class="icon-button rotate-button" aria-label="Otočit zobrazení na šířku" title="Zkusit otočit zobrazení na šířku">⤾ <span id="rotateLabel">Na šířku</span></button>
         <button id="focusButton" type="button" class="icon-button" aria-pressed="false" title="Soustředěný režim">⛶ <span class="focus-label">Soustředění</span></button>
       </div>
@@ -99,9 +99,9 @@
             <p class="eyebrow">TVÉ DNEŠNÍ CVIČENÍ</p>
             <h2 id="practiceTitle">Poznávání not</h2>
           </div>
-          <div class="practice-heading-right">
+          <div class="practice-heading-right" id="practiceHeadingRight">
             <div class="progress-label" id="progressText">0 / 20 not</div>
-            <div class="quick-tempo" aria-label="Rychlá změna tempa během tréninku">
+            <div class="quick-tempo" id="quickTempo" aria-label="Rychlá změna tempa během tréninku">
               <button id="tempoMinus" type="button" aria-label="Zpomalit o pět not za minutu">−</button>
               <span><strong id="quickTempoValue">55</strong><small>not/min</small></span>
               <button id="tempoPlus" type="button" aria-label="Zrychlit o pět not za minutu">+</button>
@@ -157,7 +157,7 @@
         <button id="midiButton" type="button" class="midi-button">Připojit MIDI</button>
       </section>
 
-      <footer class="footer">LubaPiano 0.1.4.1 · Tvůj postup zůstává v tomto zařízení · Offline po načtení aplikace</footer>
+      <footer class="footer">LubaPiano 0.1.4.2 · Tvůj postup zůstává v tomto zařízení · Offline po načtení aplikace</footer>
     </main>
   </div>
 </body>
