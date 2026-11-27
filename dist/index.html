@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#082630" />
+  <meta name="description" content="LubaPiano – uč se poznávat noty, číst dopředu a hrát na skutečném pianu." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>LubaPiano · Čti noty, hraj hudbu</title>
+  <link rel="icon" href="./icons/lubapiano.svg" type="image/svg+xml" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./style.css" />
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">♫</div>
+        <div>
+          <h1>Luba<span>Piano</span><small class="brand-version">0.1.2</small></h1>
+          <p>Čti noty. Hraj hudbu.</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="focusButton" type="button" class="icon-button" aria-pressed="false" title="Soustředěný režim">⛶ <span class="focus-label">Soustředění</span></button>
+      </div>
+    </header>
+    <div id="updateNotice" class="update-notice" hidden role="status">
+      <span>Nová verze LubaPiano je připravená.</span>
+      <button id="reloadButton" type="button">Aktualizovat</button>
+    </div>
+
+    <main>
+      <section class="setup-card" aria-label="Nastavení cvičení" id="setupCard">
+        <div class="setup-grid">
+          <fieldset class="control-group">
+            <legend>Trénink</legend>
+            <div class="segmented" role="group" aria-label="Režim tréninku">
+              <button class="segment" type="button" data-mode="still" aria-pressed="false">Klid</button>
+              <button class="segment" type="button" data-mode="moving" aria-pressed="true">Pohyb <span aria-hidden="true">↞</span></button>
+            </div>
+          </fieldset>
+          <fieldset class="control-group">
+            <legend>Notový klíč</legend>
+            <div class="segmented" role="group" aria-label="Notový klíč">
+              <button class="segment" type="button" data-clef="treble" aria-pressed="true">𝄞 Houslový</button>
+              <button class="segment" type="button" data-clef="bass" aria-pressed="false">𝄢 Basový</button>
+            </div>
+          </fieldset>
+          <fieldset class="control-group">
+            <legend>Odpověď na displeji</legend>
+            <div class="segmented" role="group" aria-label="Způsob odpovědi">
+              <button class="segment" type="button" data-answer="keyboard" aria-pressed="true">Klaviatura</button>
+              <button class="segment" type="button" data-answer="names" aria-pressed="false">Názvy not</button>
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="settings-row">
+          <div class="tempo-control">
+            <label for="tempoRange">Tempo <strong id="tempoValue">55</strong> <span>not/min</span></label>
+            <input type="range" id="tempoRange" min="20" max="140" step="5" value="55" />
+            <div class="tempo-marks"><span>20</span><span>140</span></div>
+          </div>
+          <details class="extra-settings" id="extraSettings">
+            <summary>Další nastavení</summary>
+            <div class="extra-content">
+              <div class="extra-item">
+                <span class="settings-caption">Při chybě v pohybu</span>
+                <div class="segmented">
+                  <button type="button" class="segment" data-error="continue" aria-pressed="true">Pokračovat</button>
+                  <button type="button" class="segment" data-error="stop" aria-pressed="false">Zastavit</button>
+                </div>
+              </div>
+              <div class="extra-item">
+                <span class="settings-caption">Orientace telefonu</span>
+                <div class="segmented">
+                  <button type="button" class="segment" data-orientation="auto" aria-pressed="true">Auto</button>
+                  <button type="button" class="segment" data-orientation="portrait" aria-pressed="false">Výška</button>
+                  <button type="button" class="segment" data-orientation="landscape" aria-pressed="false">Šířka</button>
+                </div>
+              </div>
+              <p class="settings-note">V PWA může prohlížeč vynucené otočení odmítnout. Rozložení se vždy přizpůsobí při ručním otočení telefonu.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section class="practice-area" aria-labelledby="practiceTitle">
+        <div class="practice-heading">
+          <div>
+            <p class="eyebrow">TVÉ DNEŠNÍ CVIČENÍ</p>
+            <h2 id="practiceTitle">Poznávání not</h2>
+          </div>
+          <div class="progress-label" id="progressText">0 / 20 not</div>
+        </div>
+        <div class="progress-track" aria-hidden="true"><div id="progressFill" class="progress-fill"></div></div>
+
+        <div class="score-card">
+          <div class="score-topline">
+            <span id="clefCaption">Houslový klíč</span>
+            <span id="modeCaption">Noty přijíždějí zprava</span>
+          </div>
+          <div class="sheet-holder">
+            <svg id="musicSheet" class="music-sheet" viewBox="0 0 720 215" role="img" aria-label="Notová osnova s aktuálním cvičením"></svg>
+          </div>
+          <p class="play-instruction" id="playInstruction">Zahraj notu, když přijede k modré čáře. Dívej se i na následující noty.</p>
+        </div>
+
+        <div class="feedback-row">
+          <div id="feedback" class="feedback" role="status" aria-live="polite">Připraveno. Stiskni „Začít“ a hraj.</div>
+          <div class="session-stats">
+            <div><strong id="correctValue">0</strong><span>správně</span></div>
+            <div><strong id="accuracyValue">—</strong><span>úspěšnost</span></div>
+          </div>
+        </div>
+
+        <div class="play-actions">
+          <button id="startButton" class="primary-button" type="button">Začít cvičení</button>
+          <button id="pauseButton" class="secondary-button" type="button" disabled>Pauza</button>
+          <button id="newButton" class="secondary-button" type="button">Nové noty</button>
+        </div>
+      </section>
+
+      <section class="input-card" aria-labelledby="inputTitle">
+        <div class="input-header">
+          <div>
+            <p class="eyebrow">JAK ODPOVÍŠ</p>
+            <h2 id="inputTitle">Klaviatura</h2>
+          </div>
+          <span class="input-caption">MIDI piano funguje v obou režimech</span>
+        </div>
+        <div id="virtualKeyboard" class="virtual-keyboard" aria-label="Dotyková klaviatura"></div>
+        <div id="noteNames" class="note-names" hidden aria-label="Výběr názvu noty"></div>
+        <p id="inputHint" class="input-hint">Dotyková klaviatura přijímá notu v každé oktávě. MIDI piano hlídá i oktávu.</p>
+      </section>
+
+      <section class="midi-strip" aria-label="Připojení skutečného piana">
+        <div class="midi-identity">
+          <div class="midi-symbol" aria-hidden="true">♬</div>
+          <div><strong>Skutečné piano</strong><span id="midiStatus">Kurzweil M90 zatím nepřipojen</span></div>
+        </div>
+        <button id="midiButton" type="button" class="midi-button">Připojit MIDI</button>
+      </section>
+
+      <footer class="footer">LubaPiano 0.1.2 · Tvůj postup zůstává v tomto zařízení · Offline po načtení aplikace</footer>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "LubaPiano – čti noty, hraj hudbu",
+  "short_name": "LubaPiano",
+  "description": "Trénink čtení not, pohyblivé noty a MIDI piano.",
+  "id": "/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#082630",
+  "theme_color": "#082630",
+  "icons": [
+    { "src": "./icons/lubapiano-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" },
+    { "src": "./icons/lubapiano-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any maskable" }
+  ]
+}
