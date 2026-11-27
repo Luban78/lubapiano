@@ -1,5 +1,13 @@
 # LubaPiano – historie verzí
 
+## 0.1.4.1 – oprava landscape a tlačítko otočení
+
+- Opravené soustředěné rozložení i pro telefony, jejichž CSS šířka v landscape překročí 760 px.
+- Na šířku se používá široká notová osnova vlevo a klaviatura s herními tlačítky vpravo.
+- Nové tlačítko Na šířku / Na výšku se pokusí o otočení telefonu; podle potřeby vyžádá fullscreen, pokud to zařízení dovolí.
+- Pokud orientaci prohlížeč nepovolí, uživatel dostane vysvětlení a může telefon otočit ručně.
+- V soustředěném režimu nepřekáží upozornění na aktualizaci PWA.
+
 ## 0.1.4 – mobilní čtení dopředu
 
 - Režim Soustředění na telefonu používá výšku displeje na notovou osnovu a odpovědi bez nutnosti posouvání stránky.

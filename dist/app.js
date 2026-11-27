@@ -36,6 +36,8 @@ const ui = {
   pause: document.getElementById("pauseButton"),
   next: document.getElementById("newButton"),
   focus: document.getElementById("focusButton"),
+  rotate: document.getElementById("rotateButton"),
+  rotateLabel: document.getElementById("rotateLabel"),
   keyboard: document.getElementById("virtualKeyboard"),
   names: document.getElementById("noteNames"),
   inputTitle: document.getElementById("inputTitle"),
@@ -62,6 +64,7 @@ let midiPristup = null;
 let midiVstup = null;
 let midiAktivni = new Set();
 let soustredeniRucne = false;
+let fullscreenKvuliOtoceni = false;
 
 function svg(tag, atributy = {}, text = "") {
   const el = document.createElementNS(SVG_NS, tag);
@@ -82,6 +85,10 @@ function sediNota(zahrana, cilova, jenNazev) {
 
 function omezTempo(tempo) {
   return Math.max(20, Math.min(140, Math.round(tempo / 5) * 5));
+}
+
+function jeKompaktniDisplej(sirka, vyska) {
+  return sirka <= 760 || (sirka > vyska && vyska <= 650);
 }
 
 // Na telefonu se noty přizpůsobí šířce. Aktuální nota a zvolený výhled
@@ -272,7 +279,7 @@ function spustCviceni() {
     return;
   }
   spusteno = true;
-  if (window.innerWidth <= 760 && !soustredeniRucne) nastavSoustredeni(true);
+  if (jeKompaktniDisplej(window.innerWidth, window.innerHeight) && !soustredeniRucne) nastavSoustredeni(true);
   bezi = true;
   posledniSnimek = 0;
   ui.start.disabled = true;
@@ -451,18 +458,59 @@ function zmenNastaveni(typ, hodnota) {
   pripravCviceni();
 }
 
-async function nastavOrientaci(orientace) {
+function cilOtoceni(sirka, vyska) {
+  return sirka > vyska ? "portrait" : "landscape";
+}
+
+function aktualizujTlacitkoOtoceni() {
+  const cil = cilOtoceni(window.innerWidth, window.innerHeight);
+  const popisek = cil === "landscape" ? "Na šířku" : "Na výšku";
+  ui.rotateLabel.textContent = popisek;
+  ui.rotate.setAttribute("aria-label", `Otočit zobrazení ${cil === "landscape" ? "na šířku" : "na výšku"}`);
+  ui.rotate.title = `Zkusit otočit zobrazení ${cil === "landscape" ? "na šířku" : "na výšku"}`;
+}
+
+async function nastavOrientaci(orientace, zTlacitka = false) {
+  let novyFullscreen = false;
+  if (zTlacitka && bezi) pauza();
   try {
     if (!screen.orientation?.lock || !screen.orientation?.unlock) throw new Error("Prohlížeč otočení neumožňuje.");
-    if (orientace === "auto") screen.orientation.unlock();
-    else await screen.orientation.lock(orientace);
+    if (orientace === "auto") {
+      screen.orientation.unlock();
+      if (fullscreenKvuliOtoceni && document.fullscreenElement && document.exitFullscreen) {
+        await document.exitFullscreen();
+        fullscreenKvuliOtoceni = false;
+      }
+    } else {
+      // V běžném Chromu může zámek orientace fungovat až na celé obrazovce.
+      // Fullscreen požadujeme výhradně po vědomém stisku tlačítka.
+      if (zTlacitka && !document.fullscreenElement && document.documentElement.requestFullscreen) {
+        try {
+          await document.documentElement.requestFullscreen();
+          novyFullscreen = true;
+          fullscreenKvuliOtoceni = true;
+        } catch { /* Někdy se zamknutí podaří i bez fullscreen režimu. */ }
+      }
+      await screen.orientation.lock(orientace);
+    }
     volba.orientation = orientace;
     vyberTlacitko("orientation", orientace);
-    zpetnaVazba(orientace === "auto" ? "Automatická orientace je zapnutá." : "Orientace změněna.");
+    zpetnaVazba(orientace === "auto" ? "Automatická orientace je zapnutá." : `Zobrazení přepnuto ${orientace === "landscape" ? "na šířku" : "na výšku"}. 🎹`, "good");
   } catch {
+    if (novyFullscreen && document.fullscreenElement && document.exitFullscreen) {
+      try { await document.exitFullscreen(); } catch { /* Vracíme se do původního stavu, pokud to jde. */ }
+      fullscreenKvuliOtoceni = false;
+    }
     volba.orientation = "auto";
     vyberTlacitko("orientation", "auto");
-    zpetnaVazba("Prohlížeč nedovolil otočení. Otoč telefon ručně; rozložení se přizpůsobí.");
+    zpetnaVazba("Telefon otočení tlačítkem nepovolil. Zkus ho otočit ručně.", "bad");
+  } finally {
+    aktualizujTlacitkoOtoceni();
+    requestAnimationFrame(() => {
+      vykresliOsnovu();
+      vytvorKlaviaturu();
+      if (ui.shell.classList.contains("focus")) window.scrollTo(0, 0);
+    });
   }
 }
 
@@ -543,8 +591,11 @@ function nastavSoustredeni(aktivni) {
   ui.focus.setAttribute("aria-pressed", String(aktivni));
   ui.focus.title = aktivni ? "Zobrazit celé ovládání" : "Soustředěný režim";
   ui.focus.innerHTML = aktivni ? "⊟ <span class=\"focus-label\">Zpět</span>" : "⛶ <span class=\"focus-label\">Soustředění</span>";
-  if (aktivni && window.innerWidth <= 760) window.scrollTo(0, 0);
-  requestAnimationFrame(vykresliOsnovu);
+  if (aktivni && jeKompaktniDisplej(window.innerWidth, window.innerHeight)) window.scrollTo(0, 0);
+  requestAnimationFrame(() => {
+    vykresliOsnovu();
+    vytvorKlaviaturu();
+  });
 }
 
 function nastavTempo(tempo) {
@@ -569,6 +620,7 @@ function pripravOvladani() {
   document.querySelectorAll("button[data-answer]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("answer", button.dataset.answer)));
   document.querySelectorAll("button[data-error]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("error", button.dataset.error)));
   document.querySelectorAll("button[data-orientation]").forEach((button) => button.addEventListener("click", () => void nastavOrientaci(button.dataset.orientation)));
+  ui.rotate.addEventListener("click", () => void nastavOrientaci(cilOtoceni(window.innerWidth, window.innerHeight), true));
   ui.tempo.addEventListener("input", () => nastavTempo(Number(ui.tempo.value)));
   ui.tempoMinus.addEventListener("click", () => nastavTempo(volba.tempo - 5));
   ui.tempoPlus.addEventListener("click", () => nastavTempo(volba.tempo + 5));
@@ -585,6 +637,8 @@ function pripravOvladani() {
   window.addEventListener("resize", () => {
     vykresliOsnovu();
     vytvorKlaviaturu();
+    aktualizujTlacitkoOtoceni();
+    if (ui.shell.classList.contains("focus")) window.scrollTo(0, 0);
   });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && bezi) pauza();
@@ -600,6 +654,7 @@ function pripravOvladani() {
 }
 
 pripravOvladani();
+aktualizujTlacitkoOtoceni();
 nastavTempo(volba.tempo);
 vytvorKlaviaturu();
 vytvorNazvy();
