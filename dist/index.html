@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#082630" />
   <meta name="description" content="LubaPiano – uč se poznávat noty, číst dopředu a hrát na skutečném pianu." />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>LubaPiano 0.1.4.2 · Čti noty, hraj hudbu</title>
+  <title>LubaPiano 0.1.5 · Čti noty, hraj hudbu</title>
   <link rel="icon" href="./icons/lubapiano.svg" type="image/svg+xml" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./style.css" />
@@ -18,7 +18,7 @@
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">♫</div>
         <div>
-          <h1>Luba<span>Piano</span><small class="brand-version">0.1.4.2</small></h1>
+          <h1>Luba<span>Piano</span><small class="brand-version">0.1.5</small></h1>
           <p>Čti noty. Hraj hudbu.</p>
         </div>
       </div>
@@ -47,6 +47,7 @@
             <div class="segmented" role="group" aria-label="Notový klíč">
               <button class="segment" type="button" data-clef="treble" aria-pressed="true">𝄞 Houslový</button>
               <button class="segment" type="button" data-clef="bass" aria-pressed="false">𝄢 Basový</button>
+              <button class="segment" type="button" data-clef="both" aria-pressed="false">𝄞+𝄢 Oba</button>
             </div>
           </fieldset>
           <fieldset class="control-group">
@@ -93,7 +94,7 @@
         </div>
       </section>
 
-      <section class="practice-area" aria-labelledby="practiceTitle">
+      <section class="practice-area" aria-labelledby="practiceTitle" id="practiceArea">
         <div class="practice-heading">
           <div>
             <p class="eyebrow">TVÉ DNEŠNÍ CVIČENÍ</p>
@@ -129,7 +130,7 @@
           </div>
         </div>
 
-        <div class="play-actions">
+        <div class="play-actions" id="playActions">
           <button id="startButton" class="primary-button" type="button">Začít cvičení</button>
           <button id="pauseButton" class="secondary-button" type="button" disabled>Pauza</button>
           <button id="newButton" class="secondary-button" type="button">Nové noty</button>
@@ -157,7 +158,7 @@
         <button id="midiButton" type="button" class="midi-button">Připojit MIDI</button>
       </section>
 
-      <footer class="footer">LubaPiano 0.1.4.2 · Tvůj postup zůstává v tomto zařízení · Offline po načtení aplikace</footer>
+      <footer class="footer">LubaPiano 0.1.5 · Tvůj postup zůstává v tomto zařízení · Offline po načtení aplikace</footer>
     </main>
   </div>
 </body>

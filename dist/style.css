@@ -216,25 +216,28 @@ h1,h2,h3,p { margin: 0; }
 /* Krátký široký displej: skutečné piano – osnova NAHOŘE, velké klávesy DOLE. */
 @media (orientation: landscape) and (min-width: 560px) and (max-height: 650px) {
   .app-shell.focus { width: 100%; max-width: none; padding-inline: max(8px, env(safe-area-inset-left)) max(8px, env(safe-area-inset-right)); }
-  .app-shell.focus .topbar { padding-bottom: 3px; }
+  .app-shell.focus .topbar { padding-bottom: 4px; }
+  .app-shell.focus .brand { display: none; }
+  .app-shell.focus .top-actions { width: 100%; flex: 1; min-width: 0; gap: 5px; }
+  .app-shell.focus .top-actions .play-actions { flex: 1; min-width: 0; gap: 4px; }
+  .app-shell.focus .top-actions .play-actions button { min-width: 0; min-height: 36px; font-size: 12px; padding: 4px 5px; }
+  .app-shell.focus .top-actions .icon-button { min-height: 36px; padding: 6px 8px; }
   .app-shell.focus .topbar .quick-tempo { gap: 2px; }
   .app-shell.focus .topbar .quick-tempo button { min-width: 30px; min-height: 30px; font-size: 19px; }
   .app-shell.focus .topbar .quick-tempo span { min-width: 39px; }
   .app-shell.focus .topbar .quick-tempo strong { font-size: 15px; }
-  .app-shell.focus main { display: flex; flex-direction: column; gap: 4px; min-height: 0; }
-  .app-shell.focus .practice-area { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; margin: 0; padding: 0; border: 0; background: transparent; }
+  .app-shell.focus main { display: flex; flex-direction: column; align-items: stretch; gap: 4px; min-height: 0; }
+  .app-shell.focus .practice-area { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; align-self: stretch; width: 100%; min-height: 0; margin: 0; padding: 0; border: 0; background: transparent; }
   .app-shell.focus .practice-heading { display: none; }
   .app-shell.focus .progress-track { display: none; }
-  .app-shell.focus .score-card { display: flex; flex: 1 1 auto; min-height: 0; }
+  .app-shell.focus .score-card { display: flex; flex: 1 1 auto; width: 100%; min-height: 0; }
   .app-shell.focus .score-topline { display: none; }
-  .app-shell.focus .feedback-row { position: absolute; left: 8px; right: 8px; bottom: 42px; margin: 0; padding: 3px 7px; min-height: 26px; max-height: 32px; border-radius: 8px; background: rgba(5, 29, 38, .87); z-index: 2; pointer-events: none; }
+  .app-shell.focus .feedback-row { position: absolute; left: 8px; right: 8px; bottom: 6px; margin: 0; padding: 3px 7px; min-height: 26px; max-height: 32px; border-radius: 8px; background: rgba(5, 29, 38, .87); z-index: 2; pointer-events: none; }
   .app-shell.focus .feedback { white-space: nowrap; text-overflow: ellipsis; max-height: 27px; }
   .app-shell.focus .session-stats strong { font-size: 13px; }
   .app-shell.focus .session-stats span { font-size: 9px; }
-  .app-shell.focus .play-actions { flex: 0 0 auto; gap: 6px; }
-  .app-shell.focus .play-actions button { min-height: 38px; font-size: 12px; line-height: 1.15; padding: 5px 4px; }
   .app-shell.focus .input-card { width: 100%; flex: 0 0 auto; margin: 0; padding: 5px; display: block; }
-  .app-shell.focus .virtual-keyboard { width: 100%; height: clamp(94px, 28dvh, 138px); }
+  .app-shell.focus .virtual-keyboard { width: 100%; height: clamp(84px, 25dvh, 124px); }
   .app-shell.focus .note-names { width: 100%; }
   .app-shell.focus .name-key { min-height: clamp(68px, 25dvh, 110px); }
   .app-shell.focus.midi-ready .input-card { display: none; }

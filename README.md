@@ -1,10 +1,10 @@
-# LubaPiano 0.1.4.2
+# LubaPiano 0.1.5
 
 První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vstupem z Kurzweil M90.
 
 ## Rozsah v0.1
 
-- Houslový a basový klíč (vždy jedna osnova).
+- Houslový, basový nebo obě osnovy najednou (první trénink obou rukou).
 - Klidný režim a pohyblivé noty s nastavitelným tempem 20–140 not/min.
 - Odpověď názvem noty nebo virtuální klaviaturou; USB MIDI funguje v obou režimech.
 - Dotyková klaviatura na úzkých displejích ukazuje jednu oktávu bez posouvání a kontroluje jen název noty; fyzický MIDI vstup kontroluje i přesnou oktávu.
@@ -12,7 +12,8 @@ První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vs
 - 20 not na cvičení, procento správných prvních odpovědí, lokální záznam nejlepšího výsledku.
 - Přizpůsobení orientaci displeje a možnost pokusu o její zamknutí.
 - Mobilní režim soustředění využívá plochu displeje pro noty a odpovědi bez scrollování; změny tempa po 5 notách/min jsou dostupné přímo během hraní.
-- Na širokém telefonu je osnova nahoře a dotyková klaviatura dole přes celou šířku. Rychlé tempo se přesune do horní lišty a v mobilním režimu zůstává jediná oktáva se sedmi velkými bílými klávesami.
+- Na širokém telefonu vyplňuje osnova celou dostupnou šířku nahoře, klaviatura má dole dvě oktávy (14 bílých kláves). Spuštění, pauza, nové noty a rychlé tempo jsou v horní liště. Úzký telefon zachovává jednu oktávu.
+- V režimu **Oba klíče** se zobrazuje houslová osnova nad basovou; každý krok obsahuje jednu notu pro každou ruku. Na dotykové klaviatuře se mohou zahrát postupně, přes MIDI se vyhodnocují přesné výšky obou not. Jde o první prototyp souběžného čtení, zatím bez kontroly skutečné souhry a rytmu.
 - Tlačítko v horní liště zkouší otočení na šířku/výšku přes Screen Orientation API. Pokud je to nutné, pokusí se přejít na celou obrazovku. Prohlížeč může požadavek odmítnout; ruční otočení vždy zůstává možností.
 - Upozornění na dostupnou aktualizaci je v režimu Soustředění skryté, aby nezabíralo prostor hře. Po návratu do nastavení se opět objeví.
 - V dalších nastaveních lze zvolit 1–4 následující noty. Rozestupy a nástup not se přizpůsobí šířce telefonu; po otočení se zachová poloha právě čtené noty.
@@ -28,7 +29,7 @@ První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vs
 
 ## Zatím není součástí
 
-- Dvě osnovy současně, akordy v cvičení, skutečné skladby / MusicXML a LubaLevel.
+- Skutečné akordy a rytmická souhra obou rukou, skladby / MusicXML a LubaLevel.
 - Časový rytmus rozličných hodnot not (v0.1 všechny noty trvají jednu dobu).
 - Automatické rozpoznání oktávy v režimu názvů (tam se zkouší jen název noty).
 

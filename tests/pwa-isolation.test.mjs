@@ -33,6 +33,6 @@ test("aktivace nemaže cache LubaWallet ani jiných aplikací", async () => {
   let cekani;
   udalosti.get("activate")({waitUntil: (promise) => { cekani = promise; }});
   await cekani;
-  assert.deepEqual(smazane, ["lubapiano-v0-1-2", "lubapiano-v0-1-3", "lubapiano-v0-1-4", "lubapiano-v0-1-4-1"]);
+  assert.deepEqual(smazane, ["lubapiano-v0-1-2", "lubapiano-v0-1-3", "lubapiano-v0-1-4", "lubapiano-v0-1-4-1", "lubapiano-v0-1-4-2"]);
   assert.equal(klientPrevzat, true);
 });

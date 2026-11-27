@@ -1,5 +1,13 @@
 # LubaPiano – historie verzí
 
+## 0.1.5 – čtení oběma rukama a oprava široké osnovy
+
+- Na šířku vyplňuje notová osnova celou dostupnou šířku, nikoli jen levou část obrazovky.
+- Tlačítka Začít, Pauza/Pokračovat a Nové noty jsou nahoře vedle tempa a otočení.
+- Spodní klaviatura má v širokém landscape dvě oktávy (14 bílých kláves), aby nebyly klávesy přehnaně široké; na úzkém mobilu zůstává sedm.
+- Nová volba **Oba klíče** kreslí houslovou osnovu nad basovou. Dvojice not se čte u stejné hrací čáry, dotykově lze noty zadat postupně a MIDI rozpoznává přesné výšky.
+- Toto je první hratelný prototyp obou rukou: skutečnou současnost stisků ani rytmické hodnoty zatím nevyhodnocuje.
+
 ## 0.1.4.2 – landscape jako skutečné piano
 
 - Landscape v režimu Soustředění má osnovu nahoře a klaviaturu dole přes celou šířku, nikoli dva úzké sloupce.

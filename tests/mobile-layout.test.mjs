@@ -43,8 +43,9 @@ test("rychlá změna tempa drží 20–140 not/min a kroky po pěti", () => {
   assert.equal(omezTempo(143), 140);
 });
 
-test("mobilní landscape zobrazuje jednu oktávu se sedmi širokými bílými klávesami", () => {
-  assert.equal(jenJednaOktava(900, 900, 400), true);
-  assert.equal(jenJednaOktava(700, 390, 820), true);
+test("landscape s plnou šířkou má dvě oktávy, úzký telefon jednu", () => {
+  assert.equal(jenJednaOktava(900, 900, 400), false);
+  assert.equal(jenJednaOktava(350, 390, 820), true);
   assert.equal(jenJednaOktava(700, 1200, 800), false);
+  assert.equal(jenJednaOktava(360, 360, 800), true);
 });

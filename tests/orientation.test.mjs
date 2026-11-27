@@ -28,30 +28,35 @@ test("automatické soustředění funguje i na širokém telefonu", () => {
 
 test("landscape má osnovu nad klaviaturou přes celou šířku", () => {
   assert.match(css, /\(orientation: landscape\) and \(max-height: 650px\)/);
-  assert.match(css, /\.app-shell\.focus main \{ display: flex; flex-direction: column; gap: 4px;/);
-  assert.match(css, /\.app-shell\.focus \.practice-area \{ position: relative; display: flex; flex: 1 1 auto;/);
+  assert.match(css, /\.app-shell\.focus main \{ display: flex; flex-direction: column; align-items: stretch; gap: 4px;/);
+  assert.match(css, /\.app-shell\.focus \.practice-area \{ position: relative; display: flex; flex: 1 1 auto; flex-direction: column; align-self: stretch; width: 100%;/);
   assert.match(css, /\.app-shell\.focus \.input-card \{ width: 100%; flex: 0 0 auto;/);
   assert.match(css, /\.app-shell\.focus \.virtual-keyboard \{ width: 100%;/);
   assert.doesNotMatch(css, /\.app-shell\.focus \.practice-area \{ display: contents; \}/);
   assert.match(css, /\.app-shell\.focus \.update-notice \{ display: none; \}/);
 });
 
-test("tempo se na šířku přesune do horní lišty a po návratu vrátí nad osnovu", () => {
+test("tempo i ovládání se na šířku přesune nahoru, po návratu zpět", () => {
   const tempo = {parentElement: null};
+  const play = {parentElement: null};
   const topActions = {prepend: (node) => { node.parentElement = topActions; }};
   const headingRight = {append: (node) => { node.parentElement = headingRight; }};
+  const practiceArea = {append: (node) => { node.parentElement = practiceArea; }};
   tempo.parentElement = headingRight;
+  play.parentElement = practiceArea;
   const window = {innerWidth: 900, innerHeight: 400};
   const preloz = funkce("prelozTempo", {
-    ui: {quickTempo: tempo, topActions, practiceHeadingRight: headingRight, shell: {classList: {contains: () => true}}},
+    ui: {quickTempo: tempo, playActions: play, topActions, practiceHeadingRight: headingRight, practiceArea, shell: {classList: {contains: () => true}}},
     window,
   });
   preloz();
   assert.equal(tempo.parentElement, topActions);
+  assert.equal(play.parentElement, topActions);
   window.innerWidth = 390;
   window.innerHeight = 820;
   preloz();
   assert.equal(tempo.parentElement, headingRight);
+  assert.equal(play.parentElement, practiceArea);
 });
 
 test("otočení tlačítkem vyžádá fullscreen před zamknutím orientace", async () => {
