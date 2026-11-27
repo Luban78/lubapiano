@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#082630" />
   <meta name="description" content="LubaPiano – uč se poznávat noty, číst dopředu a hrát na skutečném pianu." />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>LubaPiano · Čti noty, hraj hudbu</title>
+  <title>LubaPiano 0.1.4 · Čti noty, hraj hudbu</title>
   <link rel="icon" href="./icons/lubapiano.svg" type="image/svg+xml" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./style.css" />
@@ -18,7 +18,7 @@
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">♫</div>
         <div>
-          <h1>Luba<span>Piano</span><small class="brand-version">0.1.3</small></h1>
+          <h1>Luba<span>Piano</span><small class="brand-version">0.1.4</small></h1>
           <p>Čti noty. Hraj hudbu.</p>
         </div>
       </div>
@@ -74,6 +74,11 @@
                 </div>
               </div>
               <div class="extra-item">
+                <label class="settings-caption" for="previewRange">Kolik dalších not sledovat: <strong id="previewValue">3</strong></label>
+                <input id="previewRange" class="preview-range" type="range" min="1" max="4" step="1" value="3" />
+                <p class="settings-note">Větší výhled pomáhá číst dopředu. Na úzkém mobilu se mezery mezi notami automaticky zmenší.</p>
+              </div>
+              <div class="extra-item">
                 <span class="settings-caption">Orientace telefonu</span>
                 <div class="segmented">
                   <button type="button" class="segment" data-orientation="auto" aria-pressed="true">Auto</button>
@@ -93,7 +98,14 @@
             <p class="eyebrow">TVÉ DNEŠNÍ CVIČENÍ</p>
             <h2 id="practiceTitle">Poznávání not</h2>
           </div>
-          <div class="progress-label" id="progressText">0 / 20 not</div>
+          <div class="practice-heading-right">
+            <div class="progress-label" id="progressText">0 / 20 not</div>
+            <div class="quick-tempo" aria-label="Rychlá změna tempa během tréninku">
+              <button id="tempoMinus" type="button" aria-label="Zpomalit o pět not za minutu">−</button>
+              <span><strong id="quickTempoValue">55</strong><small>not/min</small></span>
+              <button id="tempoPlus" type="button" aria-label="Zrychlit o pět not za minutu">+</button>
+            </div>
+          </div>
         </div>
         <div class="progress-track" aria-hidden="true"><div id="progressFill" class="progress-fill"></div></div>
 
@@ -144,7 +156,7 @@
         <button id="midiButton" type="button" class="midi-button">Připojit MIDI</button>
       </section>
 
-      <footer class="footer">LubaPiano 0.1.3 · Tvůj postup zůstává v tomto zařízení · Offline po načtení aplikace</footer>
+      <footer class="footer">LubaPiano 0.1.4 · Tvůj postup zůstává v tomto zařízení · Offline po načtení aplikace</footer>
     </main>
   </div>
 </body>

@@ -24,6 +24,11 @@ const ui = {
   accuracy: document.getElementById("accuracyValue"),
   tempo: document.getElementById("tempoRange"),
   tempoValue: document.getElementById("tempoValue"),
+  tempoMinus: document.getElementById("tempoMinus"),
+  tempoPlus: document.getElementById("tempoPlus"),
+  quickTempoValue: document.getElementById("quickTempoValue"),
+  preview: document.getElementById("previewRange"),
+  previewValue: document.getElementById("previewValue"),
   clefCaption: document.getElementById("clefCaption"),
   modeCaption: document.getElementById("modeCaption"),
   instructions: document.getElementById("playInstruction"),
@@ -41,7 +46,7 @@ const ui = {
   reload: document.getElementById("reloadButton"),
 };
 
-const volba = {mode: "moving", clef: "treble", answer: "keyboard", error: "continue", tempo: 55, orientation: "auto"};
+const volba = {mode: "moving", clef: "treble", answer: "keyboard", error: "continue", tempo: 55, preview: 3, orientation: "auto"};
 let cviceni = [];
 let index = 0;
 let pozice = 0;
@@ -73,6 +78,19 @@ function jmenoBezOktavy(midi) { return NAZVY[midi % 12]; }
 
 function sediNota(zahrana, cilova, jenNazev) {
   return jenNazev ? zahrana % 12 === cilova % 12 : zahrana === cilova;
+}
+
+function omezTempo(tempo) {
+  return Math.max(20, Math.min(140, Math.round(tempo / 5) * 5));
+}
+
+// Na telefonu se noty přizpůsobí šířce. Aktuální nota a zvolený výhled
+// zůstávají čitelné bez horizontálního scrollování.
+function rozvrhOsnovy(sirka, preview) {
+  const caraX = Math.max(104, Math.min(152, sirka * .31));
+  const rozestup = Math.max(39, Math.min(104, (sirka - caraX - 20) / (preview + .35)));
+  const nastup = Math.min(3, Math.max(1.1, (sirka - caraX - 24) / rozestup - .25));
+  return {caraX, rozestup, nastup};
 }
 
 function vyskaNoty(midi, klic) {
@@ -120,9 +138,15 @@ function vytvorNotu(polozka) {
 
 function vykresliOsnovu() {
   const sirka = Math.max(280, Math.round(ui.svg.getBoundingClientRect().width || 720));
-  const caraX = Math.max(112, Math.min(172, sirka * .32));
-  const rozestup = sirka < 450 ? 75 : sirka < 800 ? 86 : 104;
-  ui.svg.setAttribute("viewBox", `0 0 ${sirka} 215`);
+  const vyska = Math.max(125, Math.round(ui.svg.getBoundingClientRect().height || 215));
+  const {caraX, rozestup, nastup} = rozvrhOsnovy(sirka, volba.preview);
+  if (stavSvg && spusteno && !hotovo && volba.mode === "moving") {
+    // Otočení telefonu ani změna výhledu nesmí přeskočit právě čtenou notu.
+    pozice += nastup - stavSvg.nastup;
+  }
+  // Poměr viewBoxu odpovídá skutečnému prostoru: noty se při změně výšky
+  // obrazovky neškálují a na úzkém telefonu zůstává využitá celá šířka.
+  ui.svg.setAttribute("viewBox", `0 ${Math.round((215 - vyska) / 2)} ${sirka} ${vyska}`);
   ui.svg.replaceChildren();
 
   const podklad = svg("g");
@@ -143,7 +167,7 @@ function vykresliOsnovu() {
   ui.svg.append(skupinaNot);
   ui.svg.append(svg("line", {x1: caraX, x2: caraX, y1: 34, y2: 165, stroke: "#61dce9", "stroke-width": 2.8, "stroke-linecap": "round"}));
   ui.svg.append(svg("path", {d: `M ${caraX-7} 30 L ${caraX+7} 30 L ${caraX} 39 Z`, fill: "#61dce9"}));
-  stavSvg = {sirka, caraX, rozestup};
+  stavSvg = {sirka, caraX, rozestup, nastup};
   posunNot();
 }
 
@@ -151,8 +175,8 @@ function posunNot() {
   if (!stavSvg) return;
   for (let i = 0; i < cviceni.length; i += 1) {
     const polozka = cviceni[i];
-    const x = stavSvg.caraX + (volba.mode === "moving" ? i + 3 - pozice : i - index) * stavSvg.rozestup;
-    const viditelna = x >= -35 && x <= stavSvg.sirka + 35;
+    const x = stavSvg.caraX + (volba.mode === "moving" ? i + stavSvg.nastup - pozice : i - index) * stavSvg.rozestup;
+    const viditelna = i >= index - 1 && i <= index + volba.preview && x >= -35 && x <= stavSvg.sirka + 35;
     polozka.kresba.skupina.setAttribute("visibility", viditelna ? "visible" : "hidden");
     if (!viditelna) continue;
     polozka.kresba.skupina.setAttribute("transform", `translate(${x.toFixed(2)} 0)`);
@@ -254,7 +278,7 @@ function spustCviceni() {
   ui.start.disabled = true;
   ui.pause.disabled = false;
   ui.pause.textContent = "Pauza";
-  zpetnaVazba(volba.mode === "moving" ? "Jedeme! První nota přijede za tři doby. 🎹" : "Hraj první zvýrazněnou notu. 🎹");
+  zpetnaVazba(volba.mode === "moving" ? "Jedeme! Očima sleduj noty, které přicházejí. 🎹" : "Hraj první zvýrazněnou notu. 🎹");
   if (volba.mode === "moving") spustAnimaci();
 }
 
@@ -275,7 +299,7 @@ function zaznamenejZmeskanou() {
   if (volba.error === "stop") {
     bezi = false;
     cekamNaOpravu = true;
-    pozice = index + 3;
+    pozice = index + (stavSvg?.nastup ?? 3);
     zpetnaVazba("Nota ujela. Zahraj ji správně a pokračujeme.", "bad");
   } else {
     index += 1;
@@ -290,7 +314,7 @@ function animacniSmycka(cas) {
   if (!bezi || hotovo || volba.mode !== "moving") return;
   if (posledniSnimek) pozice += Math.min(150, cas - posledniSnimek) / (60000 / volba.tempo);
   posledniSnimek = cas;
-  while (bezi && index < CELKEM && pozice > index + 3 + .42) zaznamenejZmeskanou();
+  while (bezi && index < CELKEM && pozice > index + (stavSvg?.nastup ?? 3) + .42) zaznamenejZmeskanou();
   posunNot();
   if (bezi && !hotovo) spustAnimaci();
 }
@@ -314,7 +338,7 @@ function odpovez(midi, jenNazev = false) {
   const nota = cviceni[index];
   if (!nota) return;
   if (volba.mode === "moving" && !cekamNaOpravu) {
-    const predstih = index + 3 - pozice;
+    const predstih = index + (stavSvg?.nastup ?? 3) - pozice;
     if (predstih > 1.2) {
       zpetnaVazba("Ještě chvilku počkej, až nota přijede blíž k modré čáře.");
       return;
@@ -347,7 +371,7 @@ function odpovez(midi, jenNazev = false) {
       if (volba.mode === "moving") {
         bezi = false;
         cekamNaOpravu = true;
-        pozice = index + 3;
+        pozice = index + (stavSvg?.nastup ?? 3);
       }
       zpetnaVazba(`Zahráno ${zahrana}. Ještě ne, zkus stejnou notu znovu.`, "bad");
     }
@@ -519,7 +543,24 @@ function nastavSoustredeni(aktivni) {
   ui.focus.setAttribute("aria-pressed", String(aktivni));
   ui.focus.title = aktivni ? "Zobrazit celé ovládání" : "Soustředěný režim";
   ui.focus.innerHTML = aktivni ? "⊟ <span class=\"focus-label\">Zpět</span>" : "⛶ <span class=\"focus-label\">Soustředění</span>";
+  if (aktivni && window.innerWidth <= 760) window.scrollTo(0, 0);
   requestAnimationFrame(vykresliOsnovu);
+}
+
+function nastavTempo(tempo) {
+  volba.tempo = omezTempo(tempo);
+  ui.tempo.value = String(volba.tempo);
+  ui.tempoValue.textContent = String(volba.tempo);
+  ui.quickTempoValue.textContent = String(volba.tempo);
+  ui.tempoMinus.disabled = volba.tempo <= 20;
+  ui.tempoPlus.disabled = volba.tempo >= 140;
+}
+
+function nastavNahled(pocet) {
+  volba.preview = Math.max(1, Math.min(4, Math.round(pocet)));
+  ui.preview.value = String(volba.preview);
+  ui.previewValue.textContent = String(volba.preview);
+  vykresliOsnovu();
 }
 
 function pripravOvladani() {
@@ -528,13 +569,17 @@ function pripravOvladani() {
   document.querySelectorAll("button[data-answer]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("answer", button.dataset.answer)));
   document.querySelectorAll("button[data-error]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("error", button.dataset.error)));
   document.querySelectorAll("button[data-orientation]").forEach((button) => button.addEventListener("click", () => void nastavOrientaci(button.dataset.orientation)));
-  ui.tempo.addEventListener("input", () => {volba.tempo = Number(ui.tempo.value); ui.tempoValue.textContent = String(volba.tempo);});
+  ui.tempo.addEventListener("input", () => nastavTempo(Number(ui.tempo.value)));
+  ui.tempoMinus.addEventListener("click", () => nastavTempo(volba.tempo - 5));
+  ui.tempoPlus.addEventListener("click", () => nastavTempo(volba.tempo + 5));
+  ui.preview.addEventListener("input", () => nastavNahled(Number(ui.preview.value)));
   ui.start.addEventListener("click", spustCviceni);
   ui.pause.addEventListener("click", pauza);
   ui.next.addEventListener("click", pripravCviceni);
   ui.midi.addEventListener("click", () => void pripojMidi());
   ui.focus.addEventListener("click", () => {
     soustredeniRucne = true;
+    if (ui.shell.classList.contains("focus") && bezi) pauza();
     nastavSoustredeni(!ui.shell.classList.contains("focus"));
   });
   window.addEventListener("resize", () => {
@@ -555,6 +600,7 @@ function pripravOvladani() {
 }
 
 pripravOvladani();
+nastavTempo(volba.tempo);
 vytvorKlaviaturu();
 vytvorNazvy();
 prepniOdpoved();

@@ -1,4 +1,4 @@
-# LubaPiano 0.1.3
+# LubaPiano 0.1.4
 
 První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vstupem z Kurzweil M90.
 
@@ -11,6 +11,8 @@ První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vs
 - Při chybě v pohyblivém režimu pokračovat nebo zastavit.
 - 20 not na cvičení, procento správných prvních odpovědí, lokální záznam nejlepšího výsledku.
 - Přizpůsobení orientaci displeje a možnost pokusu o její zamknutí.
+- Mobilní režim soustředění využívá plochu displeje pro noty a odpovědi bez scrollování; změny tempa po 5 notách/min jsou dostupné přímo během hraní.
+- V dalších nastaveních lze zvolit 1–4 následující noty. Rozestupy a nástup not se přizpůsobí šířce telefonu; po otočení se zachová poloha právě čtené noty.
 - Manifest + service worker s místní cache pro offline režim po prvním načtení.
 - Viditelné číslo verze u loga a upozornění na připravenou aktualizaci PWA.
 
@@ -31,11 +33,10 @@ Všechno běží v prohlížeči bez externího API. Pouze testovací statistiky
 
 ## Lokální práce a patche
 
-- V SPCK otevři `dist/index.html` a prohlédni projekt na větvi s patchem.
-- První patch je větev `oprava-001-rozlozeni`. Do `main` se dostane až po otestování a schválení PR.
-- Logika rozpoznání not má jednoduché testy bez instalace závislostí: `node --test tests/notes.test.mjs`.
+- V SPCK zůstávej na `main`, dej **Pull** a otevři `dist/index.html`.
+- Logika rozpoznání, mobilního rozložení a PWA má testy bez instalace závislostí: `node --test tests/*.test.mjs`.
 - Číslo verze měň v `dist/index.html`, `dist/sw.js`, `README.md` a `CHANGELOG.md`.
-- Produkční PWA na soukromém webu se nasazuje samostatně až z odsouhlasené verze.
+- GitHub `main` slouží pro patche testované v SPCK. Soukromý nasazený web se aktualizuje samostatně, až jej budeme chtít nasadit.
 
 ## Více PWA na localhostu
 

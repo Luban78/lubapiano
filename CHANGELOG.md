@@ -1,6 +1,15 @@
 # LubaPiano – historie verzí
 
-## 0.1.3 – patch 001 (kandidát k testování)
+## 0.1.4 – mobilní čtení dopředu
+
+- Režim Soustředění na telefonu používá výšku displeje na notovou osnovu a odpovědi bez nutnosti posouvání stránky.
+- Landscape dává osnovu a klaviaturu vedle sebe; důležité ovládání zůstává přímo při hraní.
+- Tempo lze během cvičení snížit/zvýšit tlačítky − / + po 5 notách za minutu.
+- V Dalších nastaveních lze zvolit výhled na 1–4 následující noty; dynamické rozestupy udržují noty čitelné na malém displeji.
+- Opravené měřítko osnovy při změně výšky; otočení telefonu nenaruší načasování aktuální noty.
+- Zachovaný MIDI vstup a dosavadní režimy; nová testovací sada pro mobilní rozvržení.
+
+## 0.1.3 – patch 001
 
 - Zmenšené notové klíče a posunutá hrací čára pro lepší oddělení první noty.
 - Na mobilu se po zahájení tréninku zapne kompaktní režim soustředění; nastavení lze vrátit tlačítkem Zpět.
@@ -26,10 +35,9 @@
 - První PWA: klidný/pohyblivý režim, houslový/basový klíč, virtuální klaviatura a názvy not.
 - MIDI vstup přes USB, 20 not na cvičení, tempo, statistiky, offline cache a responzivní rozložení.
 
-## Navržený postup pro další patche
+## Postup pro další patche
 
-1. Nový patch založit ve vlastní větvi z `main` (např. `oprava-klaviatury`).
-2. Změnit jen potřebné soubory a zvýšit verzi.
-3. Ověřit JavaScript, dotykovou klaviaturu, MIDI a orientaci displeje podle rozsahu změny.
-4. Pull request zkontrolovat a začlenit do `main`.
-5. Nasadit do soukromého webu a potvrdit verzi i funkci na telefonu.
+1. Změnit potřebné soubory, zvýšit verzi a projít testy.
+2. Začlenit ověřené změny do GitHub `main`.
+3. V SPCK stáhnout **Pull** a otestovat na telefonu.
+4. Soukromý web nasadit až při samostatném rozhodnutí o publikování.
