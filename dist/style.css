@@ -114,6 +114,19 @@ h1,h2,h3,p { margin: 0; }
   .setup-grid fieldset:last-child { grid-column: 1/-1; }
   .segment { font-size: 13px; }
   .brand-icon { width: 43px; height: 43px; }
+  .app-shell.focus .topbar { padding-bottom: 8px; }
+  .app-shell.focus .practice-area, .app-shell.focus .input-card { padding: 10px; }
+  .app-shell.focus .practice-heading h2, .app-shell.focus .input-header h2 { font-size: 17px; }
+  .app-shell.focus .progress-track { margin: 7px 0; }
+  .app-shell.focus .score-topline { padding: 8px 10px 0; }
+  .app-shell.focus .music-sheet { height: 175px; }
+  .app-shell.focus .play-instruction { padding: 0 8px 7px; min-height: 20px; }
+  .app-shell.focus .feedback-row { margin: 8px 0; }
+  .app-shell.focus .input-header { margin-bottom: 6px; }
+  .app-shell.focus .virtual-keyboard { height: 132px; }
+  .app-shell.focus .piano-key.white { height: 129px; }
+  .app-shell.focus .piano-key.black { height: 80px; }
+  .app-shell.focus .midi-strip { padding: 8px 12px; }
 }
 @media (max-width: 460px) {
   .app-shell { padding-inline: 10px; }
@@ -125,7 +138,6 @@ h1,h2,h3,p { margin: 0; }
   .settings-row { gap: 10px; }
   .extra-settings { min-width: 135px; }
   .focus-label { display: none; }
-  .version-pill { display: none; }
   .practice-heading h2 { font-size: 19px; }
   .music-sheet { height: 210px; }
   .feedback { font-size: 13px; }
@@ -147,5 +159,13 @@ h1,h2,h3,p { margin: 0; }
   .settings-row { margin-top: 5px; padding-top: 5px; }
   .music-sheet { height: 172px; }
   .play-instruction { padding-bottom: 6px; }
+}
+@media (orientation: landscape) and (max-height: 550px) and (min-width: 600px) {
+  .app-shell.focus main { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(260px, .8fr); gap: 10px; align-items: start; }
+  .app-shell.focus .practice-area { grid-column: 1; grid-row: 1 / 3; margin: 0; }
+  .app-shell.focus .input-card { grid-column: 2; grid-row: 1; margin: 0; }
+  .app-shell.focus .midi-strip { grid-column: 2; grid-row: 2; }
+  .app-shell.focus.midi-ready .practice-area, .app-shell.focus.midi-ready .midi-strip { grid-column: 1 / -1; }
+  .app-shell.focus .music-sheet { height: 160px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }

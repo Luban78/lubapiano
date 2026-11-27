@@ -1,4 +1,4 @@
-const CACHE = "lubapiano-v0-1-2";
+const CACHE = "lubapiano-v0-1-3";
 const ASSETS = ["./", "./index.html", "./style.css", "./app.js", "./manifest.webmanifest", "./icons/lubapiano.svg", "./icons/lubapiano-192.png", "./icons/lubapiano-512.png"];
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));

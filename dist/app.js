@@ -56,6 +56,7 @@ let stavSvg = null;
 let midiPristup = null;
 let midiVstup = null;
 let midiAktivni = new Set();
+let soustredeniRucne = false;
 
 function svg(tag, atributy = {}, text = "") {
   const el = document.createElementNS(SVG_NS, tag);
@@ -69,6 +70,10 @@ function nazevNoty(midi) {
 }
 
 function jmenoBezOktavy(midi) { return NAZVY[midi % 12]; }
+
+function sediNota(zahrana, cilova, jenNazev) {
+  return jenNazev ? zahrana % 12 === cilova % 12 : zahrana === cilova;
+}
 
 function vyskaNoty(midi, klic) {
   const jmeno = NAZVY[midi % 12];
@@ -115,7 +120,7 @@ function vytvorNotu(polozka) {
 
 function vykresliOsnovu() {
   const sirka = Math.max(280, Math.round(ui.svg.getBoundingClientRect().width || 720));
-  const caraX = Math.max(91, Math.min(172, sirka * .25));
+  const caraX = Math.max(112, Math.min(172, sirka * .32));
   const rozestup = sirka < 450 ? 75 : sirka < 800 ? 86 : 104;
   ui.svg.setAttribute("viewBox", `0 0 ${sirka} 215`);
   ui.svg.replaceChildren();
@@ -127,7 +132,7 @@ function vykresliOsnovu() {
   }
   // Unicode music glyph; the fallback G/F label remains visible if a system lacks a music font.
   const symbol = volba.clef === "treble" ? "𝄞" : "𝄢";
-  const znak = svg("text", {x: 20, y: volba.clef === "treble" ? 158 : 111, "font-family": "Noto Music, Segoe UI Symbol, serif", "font-size": volba.clef === "treble" ? 103 : 91, fill: "#e9f5f6"}, symbol);
+  const znak = svg("text", {x: 20, y: volba.clef === "treble" ? 146 : 108, "font-family": "Noto Music, Segoe UI Symbol, serif", "font-size": volba.clef === "treble" ? 82 : 76, fill: "#e9f5f6"}, symbol);
   podklad.append(znak);
   const popisek = svg("text", {x: 33, y: 185, "text-anchor": "middle", "font-size": 11, "font-weight": "700", fill: "#9abdc5"}, volba.clef === "treble" ? "G" : "F");
   podklad.append(popisek);
@@ -243,6 +248,7 @@ function spustCviceni() {
     return;
   }
   spusteno = true;
+  if (window.innerWidth <= 760 && !soustredeniRucne) nastavSoustredeni(true);
   bezi = true;
   posledniSnimek = 0;
   ui.start.disabled = true;
@@ -319,7 +325,7 @@ function odpovez(midi, jenNazev = false) {
       return;
     }
   }
-  const spravne = jenNazev ? jmenoBezOktavy(midi) === jmenoBezOktavy(nota.midi) : midi === nota.midi;
+  const spravne = sediNota(midi, nota.midi, jenNazev);
   if (spravne) {
     const bylaChyba = Boolean(nota.stav);
     if (!nota.stav) nota.stav = "ok";
@@ -333,16 +339,17 @@ function odpovez(midi, jenNazev = false) {
     zpetnaVazba(bylaChyba ? `Teď správně: ${nazevNoty(nota.midi)}. Pokračujeme!` : `Správně! ${nazevNoty(nota.midi)} ✓`, "good");
   } else {
     if (!nota.stav) nota.stav = "bad";
+    const zahrana = jenNazev ? jmenoBezOktavy(midi) : nazevNoty(midi);
     if (volba.mode === "moving" && volba.error === "continue" && !cekamNaOpravu) {
       index += 1;
-      zpetnaVazba("Tohle nebyla správná nota. Pokračuj dál.", "bad");
+      zpetnaVazba(`Zahráno ${zahrana}, správně bylo ${nazevNoty(nota.midi)}. Čti dál.`, "bad");
     } else {
       if (volba.mode === "moving") {
         bezi = false;
         cekamNaOpravu = true;
         pozice = index + 3;
       }
-      zpetnaVazba("Ještě ne. Zkus stejnou notu znovu.", "bad");
+      zpetnaVazba(`Zahráno ${zahrana}. Ještě ne, zkus stejnou notu znovu.`, "bad");
     }
   }
   zmenaStatistik();
@@ -507,6 +514,14 @@ async function pripojMidi() {
   }
 }
 
+function nastavSoustredeni(aktivni) {
+  ui.shell.classList.toggle("focus", aktivni);
+  ui.focus.setAttribute("aria-pressed", String(aktivni));
+  ui.focus.title = aktivni ? "Zobrazit celé ovládání" : "Soustředěný režim";
+  ui.focus.innerHTML = aktivni ? "⊟ <span class=\"focus-label\">Zpět</span>" : "⛶ <span class=\"focus-label\">Soustředění</span>";
+  requestAnimationFrame(vykresliOsnovu);
+}
+
 function pripravOvladani() {
   document.querySelectorAll("button[data-mode]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("mode", button.dataset.mode)));
   document.querySelectorAll("button[data-clef]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("clef", button.dataset.clef)));
@@ -519,11 +534,8 @@ function pripravOvladani() {
   ui.next.addEventListener("click", pripravCviceni);
   ui.midi.addEventListener("click", () => void pripojMidi());
   ui.focus.addEventListener("click", () => {
-    const aktivni = ui.shell.classList.toggle("focus");
-    ui.focus.setAttribute("aria-pressed", String(aktivni));
-    ui.focus.title = aktivni ? "Zobrazit celé ovládání" : "Soustředěný režim";
-    ui.focus.innerHTML = aktivni ? "⊟ <span class=\"focus-label\">Zpět</span>" : "⛶ <span class=\"focus-label\">Soustředění</span>";
-    requestAnimationFrame(vykresliOsnovu);
+    soustredeniRucne = true;
+    nastavSoustredeni(!ui.shell.classList.contains("focus"));
   });
   window.addEventListener("resize", () => {
     vykresliOsnovu();
