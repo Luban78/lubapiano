@@ -1,6 +1,6 @@
 "use strict";
 
-// LubaPiano 0.1.5.1. All exercise generation and scoring happens on this device.
+// LubaPiano 0.1.5.2. All exercise generation and scoring happens on this device.
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CELKEM = 20;
 const NAZVY = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "B", "H"];
@@ -8,6 +8,12 @@ const PRIROZENE = ["C", "D", "E", "F", "G", "A", "H"];
 const PRAHA_NOT = {
   treble: [60, 62, 64, 65, 67, 69, 71, 72],  // C4 – C5
   bass: [43, 45, 47, 48, 50, 52, 53, 55],     // G2 – G3
+};
+// V krátkém landscape pro oba klíče zůstáváme uvnitř osnov.
+// C4 a D4 v houslovém klíči by vyžadovaly prostor pod osnovou.
+const NOTY_BEZ_POMOCNYCH = {
+  treble: [64, 65, 67, 69, 71, 72, 74, 76, 77], // E4 – F5
+  bass: [43, 45, 47, 48, 50, 52, 53, 55, 57],   // G2 – A3
 };
 const BILE = new Set([0, 2, 4, 5, 7, 9, 11]);
 const VYSKA_LINKY = 17;
@@ -70,6 +76,7 @@ let midiVstup = null;
 let midiAktivni = new Set();
 let soustredeniRucne = false;
 let fullscreenKvuliOtoceni = false;
+let orientaceGenerovani = null;
 
 function svg(tag, atributy = {}, text = "") {
   const el = document.createElementNS(SVG_NS, tag);
@@ -88,10 +95,8 @@ function sediNota(zahrana, cilova, jenNazev) {
   return jenNazev ? zahrana % 12 === cilova % 12 : zahrana === cilova;
 }
 
-function najdiCastDvojice(polozka, zahrana, jenNazev) {
-  if (!polozka.splnene.has("treble") && sediNota(zahrana, polozka.midi, jenNazev)) return "treble";
-  if (!polozka.splnene.has("bass") && sediNota(zahrana, polozka.bassMidi, jenNazev)) return "bass";
-  return null;
+function rozsahProCviceni(klic, obaKlice, naSirku) {
+  return obaKlice && naSirku ? NOTY_BEZ_POMOCNYCH[klic] : PRAHA_NOT[klic];
 }
 
 function omezTempo(tempo) {
@@ -124,8 +129,7 @@ function vyskaNoty(midi, klic, horni = HORE, roztec = VYSKA_LINKY) {
   return horni + 4 * roztec - (oktava * 7 + diatonicke - odspodu) * (roztec / 2);
 }
 
-function barvaNoty(polozka, aktualni, cast = "treble") {
-  if (polozka.splnene?.has(cast)) return "#6ee0b4";
+function barvaNoty(polozka, aktualni) {
   if (polozka.stav === "ok") return "#6ee0b4";
   if (polozka.stav === "bad" || polozka.stav === "miss") return "#ff9e9e";
   return aktualni ? "#65deeb" : "#f1f7f8";
@@ -149,12 +153,13 @@ function kresliJednuNotu(midi, klic, horni, roztec, mala = false) {
   }
   const nahoru = y >= horni + 2 * roztec;
   const radius = mala ? 9 : 12;
+  const delkaStonku = mala ? Math.max(34, roztec * 2.9) : 45;
   const hlavicka = svg("ellipse", {cx: 0, cy: y, rx: radius, ry: mala ? 5.8 : 8, transform: `rotate(-21 0 ${y})`});
   const stonek = svg("line", {
     x1: nahoru ? radius - 1 : 1 - radius,
     x2: nahoru ? radius - 1 : 1 - radius,
     y1: y,
-    y2: nahoru ? y - (mala ? 27 : 45) : y + (mala ? 27 : 45),
+    y2: nahoru ? y - delkaStonku : y + delkaStonku,
     "stroke-width": mala ? 1.8 : 2.6, "stroke-linecap": "round",
   });
   skupina.append(linky, hlavicka, stonek);
@@ -163,10 +168,12 @@ function kresliJednuNotu(midi, klic, horni, roztec, mala = false) {
 
 function vytvorNotu(polozka, rozvrh) {
   const skupina = svg("g");
+  const klic = polozka.klic || volba.clef;
+  // Obě osnovy jsou stále viditelné, ale jedno místo obsahuje pouze
+  // jednu aktivní notu – náhodně v houslovém nebo basovém klíči.
   const noty = volba.clef === "both"
-    ? [kresliJednuNotu(polozka.midi, "treble", rozvrh.trebleTop, rozvrh.dualRoztec, true),
-       kresliJednuNotu(polozka.bassMidi, "bass", rozvrh.bassTop, rozvrh.dualRoztec, true)]
-    : [kresliJednuNotu(polozka.midi, volba.clef, HORE, VYSKA_LINKY)];
+    ? [kresliJednuNotu(polozka.midi, klic, klic === "treble" ? rozvrh.trebleTop : rozvrh.bassTop, rozvrh.dualRoztec, true)]
+    : [kresliJednuNotu(polozka.midi, klic, HORE, VYSKA_LINKY)];
   for (const nota of noty) skupina.append(nota.skupina);
   polozka.kresba = {skupina, noty};
   return skupina;
@@ -234,7 +241,7 @@ function posunNot() {
     if (!viditelna) continue;
     polozka.kresba.skupina.setAttribute("transform", `translate(${x.toFixed(2)} 0)`);
     for (const kresba of polozka.kresba.noty) {
-      const barva = barvaNoty(polozka, i === index, kresba.klic);
+      const barva = barvaNoty(polozka, i === index);
       kresba.hlavicka.setAttribute("fill", barva);
       kresba.stonek.setAttribute("stroke", barva);
     }
@@ -244,19 +251,30 @@ function posunNot() {
 
 function vygenerujCviceni() {
   const dvojita = volba.clef === "both";
-  const rozsah = PRAHA_NOT[dvojita ? "treble" : volba.clef];
+  const naSirku = window.innerWidth > window.innerHeight;
+  const klice = [];
+  if (dvojita) {
+    // Každá sousední dvojice obsahuje jednou každý klíč. Pořadí je
+    // náhodné, takže v jedné osnově nikdy nevznikne dlouhá série.
+    for (let i = 0; i < CELKEM; i += 2) {
+      const prvni = Math.random() < .5 ? "treble" : "bass";
+      klice.push(prvni);
+      if (i + 1 < CELKEM) klice.push(prvni === "treble" ? "bass" : "treble");
+    }
+  }
   const noty = [];
   let minula = -1;
   let predminula = -1;
   for (let i = 0; i < CELKEM; i += 1) {
+    const klic = dvojita ? klice[i] : volba.clef;
+    const rozsah = rozsahProCviceni(klic, dvojita, naSirku);
     let nova = rozsah[Math.floor(Math.random() * rozsah.length)];
     let pokusy = 0;
     while ((nova === minula || (nova === predminula && Math.random() < .7)) && pokusy < 15) {
       nova = rozsah[Math.floor(Math.random() * rozsah.length)];
       pokusy += 1;
     }
-    const bassMidi = dvojita ? PRAHA_NOT.bass[Math.floor(Math.random() * PRAHA_NOT.bass.length)] : null;
-    noty.push({midi: nova, bassMidi, splnene: new Set(), stav: null, kresba: null});
+    noty.push({midi: nova, klic, stav: null, kresba: null});
     predminula = minula;
     minula = nova;
   }
@@ -274,11 +292,12 @@ function zmenaStatistik() {
   const pokusy = spravne + spatne;
   ui.correct.textContent = String(spravne);
   ui.accuracy.textContent = pokusy ? `${Math.round(spravne / pokusy * 100)} %` : "—";
-  ui.progress.textContent = `${index} / ${CELKEM} ${volba.clef === "both" ? "dvojic" : "not"}`;
+  ui.progress.textContent = `${index} / ${CELKEM} not`;
   ui.progressFill.style.width = `${index / CELKEM * 100}%`;
 }
 
 function pripravCviceni() {
+  orientaceGenerovani = window.innerWidth > window.innerHeight;
   cviceni = vygenerujCviceni();
   index = 0;
   pozice = 0;
@@ -292,9 +311,9 @@ function pripravCviceni() {
   ui.start.disabled = false;
   ui.pause.disabled = true;
   ui.pause.textContent = "Pauza";
-  ui.clefCaption.textContent = volba.clef === "both" ? "𝄞 + 𝄢 Obě ruce" : volba.clef === "treble" ? "𝄞 Houslový klíč" : "𝄢 Basový klíč";
+  ui.clefCaption.textContent = volba.clef === "both" ? "𝄞 + 𝄢 Střídání klíčů" : volba.clef === "treble" ? "𝄞 Houslový klíč" : "𝄢 Basový klíč";
   ui.modeCaption.textContent = volba.mode === "moving" ? "Noty přijíždějí zprava" : "Noty čekají na odpověď";
-  ui.instructions.textContent = volba.clef === "both" ? "Zahraj obě noty u modré čáry. Na displeji můžeš klepnout na obě postupně." : volba.mode === "moving" ? "Hraj u modré čáry. Očima už sleduj i další noty." : "Zahraj zvýrazněnou notu. Další přijde po tvé odpovědi.";
+  ui.instructions.textContent = volba.clef === "both" ? "Sleduj obě osnovy. Pokaždé zahraj jen jednu notu z právě aktivního klíče." : volba.mode === "moving" ? "Hraj u modré čáry. Očima už sleduj i další noty." : "Zahraj zvýrazněnou notu. Další přijde po tvé odpovědi.";
   zmenaStatistik();
   vykresliOsnovu();
   zpetnaVazba("Připraveno. Stiskni „Začít“ a hraj.");
@@ -318,7 +337,7 @@ function konciCviceni() {
     rekord = presnost > (data.best || 0);
     localStorage.setItem("lubapiano-postup-01", JSON.stringify({sessions: (data.sessions || 0) + 1, best: Math.max(data.best || 0, presnost), last: presnost}));
   } catch { /* Local storage is optional (privacy modes). */ }
-  zpetnaVazba(`Hotovo! ${spravne} z ${CELKEM} ${volba.clef === "both" ? "dvojic" : "not"} správně (${presnost} %).${rekord ? " Nový osobní rekord! 🥳" : ""}`, "good");
+  zpetnaVazba(`Hotovo! ${spravne} z ${CELKEM} not správně (${presnost} %).${rekord ? " Nový osobní rekord! 🥳" : ""}`, "good");
 }
 
 function spustCviceni() {
@@ -405,44 +424,6 @@ function odpovez(midi, jenNazev = false) {
       posunNot();
       return;
     }
-  }
-  if (volba.clef === "both") {
-    const cast = najdiCastDvojice(nota, midi, jenNazev);
-    if (cast) {
-      nota.splnene.add(cast);
-      if (nota.splnene.size === 2) {
-        const bylaChyba = Boolean(nota.stav);
-        if (!nota.stav) nota.stav = "ok";
-        index += 1;
-        if (cekamNaOpravu) {
-          cekamNaOpravu = false;
-          bezi = true;
-          posledniSnimek = 0;
-          if (volba.mode === "moving") spustAnimaci();
-        }
-        zpetnaVazba(bylaChyba ? "Obě noty opraveny, pokračujeme!" : "Obě noty správně! ✓", "good");
-      } else {
-        zpetnaVazba(`Správně ${cast === "treble" ? "houslový" : "basový"} klíč. Ještě druhá nota.`, "good");
-      }
-    } else {
-      if (!nota.stav) nota.stav = "bad";
-      const zahrana = jenNazev ? jmenoBezOktavy(midi) : nazevNoty(midi);
-      if (volba.mode === "moving" && volba.error === "continue" && !cekamNaOpravu) {
-        index += 1;
-        zpetnaVazba(`Zahráno ${zahrana}, ale dvojice nesedí. Čti dál.`, "bad");
-      } else {
-        if (volba.mode === "moving") {
-          bezi = false;
-          cekamNaOpravu = true;
-          pozice = index + (stavSvg?.nastup ?? 3);
-        }
-        zpetnaVazba(`Zahráno ${zahrana}. Zkus zbývající notu znovu.`, "bad");
-      }
-    }
-    zmenaStatistik();
-    posunNot();
-    if (index >= CELKEM) konciCviceni();
-    return;
   }
   const spravne = sediNota(midi, nota.midi, jenNazev);
   if (spravne) {
@@ -741,7 +722,11 @@ function pripravOvladani() {
   });
   window.addEventListener("resize", () => {
     prelozTempo();
-    vykresliOsnovu();
+    // Před začátkem nové série vždy připrav vhodný rozsah pro aktuální
+    // orientaci. Rozjeté cvičení při otočení nikdy nepřerušujeme.
+    const naSirku = window.innerWidth > window.innerHeight;
+    if (volba.clef === "both" && !spusteno && orientaceGenerovani !== naSirku) pripravCviceni();
+    else vykresliOsnovu();
     vytvorKlaviaturu();
     aktualizujTlacitkoOtoceni();
     if (ui.shell.classList.contains("focus")) window.scrollTo(0, 0);

@@ -32,6 +32,7 @@ test("landscape má osnovu nad klaviaturou přes celou šířku", () => {
   assert.match(css, /\.app-shell\.focus \.practice-area \{ position: relative; display: flex; flex: 1 1 auto; flex-direction: column; align-self: stretch; width: 100%;/);
   assert.match(css, /\.app-shell\.focus \.input-card \{ width: 100%; flex: 0 0 auto;/);
   assert.match(css, /\.app-shell\.focus \.virtual-keyboard \{ width: 100%;/);
+  assert.match(css, /\.app-shell\.focus \.feedback-row \{ position: static; flex: 0 0 auto; width: 100%; height: 30px;/);
   assert.doesNotMatch(css, /\.app-shell\.focus \.practice-area \{ display: contents; \}/);
   assert.match(css, /\.app-shell\.focus \.update-notice \{ display: none; \}/);
 });

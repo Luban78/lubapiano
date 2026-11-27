@@ -1,5 +1,13 @@
 # LubaPiano – historie verzí
 
+## 0.1.5.2 – na mobilu střídáme klíče
+
+- Při zvolených obou osnovách se náhodně střídá **jediná nota** mezi houslovým a basovým klíčem. Každá dvacítka má deset not z každého klíče; stačí jeden dotyk, MIDI také čeká jeden přesný tón.
+- Nožičky not v obou osnovách jsou delší a přehlednější.
+- V landscape se pro dvojitou osnovu vybírají noty uvnitř linek, na výšku lze dál procvičovat i notu na pomocné lince. Otočení před startem připraví odpovídající rozsah.
+- Proužek s výsledkem a chybovými hláškami je na šířku pod notovou osnovou, takže už nepřekrývá spodní linky ani noty.
+- Pokročilá současná hra dvěma rukama zůstává plánovaným samostatným režimem.
+
 ## 0.1.5.1 – čistší dvojitá osnova a oprava mobilního výběru
 
 - Houslový a basový klíč mají v režimu „Oba“ menší symboly a větší mezeru mezi osnovami, aby se nepřekrývaly.
