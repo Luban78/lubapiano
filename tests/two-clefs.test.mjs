@@ -69,7 +69,11 @@ test("vykreslení dvou osnov vytvoří deset linek a oba notové klíče", () =>
   });
   kresliOsnovu();
   assert.equal(atributy.viewBox, "0 0 900 225");
-  assert.equal(prvky.filter((p) => p.tag === "line" && p.attrs.stroke === "#abc2c8").length, 10);
+  const linky = prvky.filter((p) => p.tag === "line" && p.attrs.stroke === "#abc2c8");
+  assert.equal(linky.length, 10);
+  const roztec = linky[1].attrs.y1 - linky[0].attrs.y1;
+  const mezera = linky[5].attrs.y1 - linky[4].attrs.y1;
+  assert.ok(mezera >= 2 * roztec, "klíče potřebují viditelný rozestup mezi osnovami");
   assert.equal(prvky.filter((p) => p.tag === "text" && p.obsah === "𝄞").length, 1);
   assert.equal(prvky.filter((p) => p.tag === "text" && p.obsah === "𝄢").length, 1);
 });

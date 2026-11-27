@@ -1,4 +1,4 @@
-# LubaPiano 0.1.5
+# LubaPiano 0.1.5.1
 
 První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vstupem z Kurzweil M90.
 
@@ -14,6 +14,7 @@ První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vs
 - Mobilní režim soustředění využívá plochu displeje pro noty a odpovědi bez scrollování; změny tempa po 5 notách/min jsou dostupné přímo během hraní.
 - Na širokém telefonu vyplňuje osnova celou dostupnou šířku nahoře, klaviatura má dole dvě oktávy (14 bílých kláves). Spuštění, pauza, nové noty a rychlé tempo jsou v horní liště. Úzký telefon zachovává jednu oktávu.
 - V režimu **Oba klíče** se zobrazuje houslová osnova nad basovou; každý krok obsahuje jednu notu pro každou ruku. Na dotykové klaviatuře se mohou zahrát postupně, přes MIDI se vyhodnocují přesné výšky obou not. Jde o první prototyp souběžného čtení, zatím bez kontroly skutečné souhry a rytmu.
+- Obě osnovy mají od sebe bezpečnou mezeru, zmenšené samostatné symboly klíčů a automatickou rozteč podle výšky. Na úzkém mobilu jsou ovladače tří klíčů přes celou šířku nastavení.
 - Tlačítko v horní liště zkouší otočení na šířku/výšku přes Screen Orientation API. Pokud je to nutné, pokusí se přejít na celou obrazovku. Prohlížeč může požadavek odmítnout; ruční otočení vždy zůstává možností.
 - Upozornění na dostupnou aktualizaci je v režimu Soustředění skryté, aby nezabíralo prostor hře. Po návratu do nastavení se opět objeví.
 - V dalších nastaveních lze zvolit 1–4 následující noty. Rozestupy a nástup not se přizpůsobí šířce telefonu; po otočení se zachová poloha právě čtené noty.

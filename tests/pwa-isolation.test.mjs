@@ -19,7 +19,7 @@ test("aktivace nemaže cache LubaWallet ani jiných aplikací", async () => {
   const smazane = [];
   let klientPrevzat = false;
   const cache = {
-    keys: async () => ["lubawallet-cache-v1", "lubapiano-v0-1-2", "lubapiano-v0-1-3", "lubapiano-v0-1-4", "lubapiano-v0-1-4-1", "lubapiano-v0-1-4-2", "jina-aplikace"],
+    keys: async () => ["lubawallet-cache-v1", "lubapiano-v0-1-2", "lubapiano-v0-1-3", "lubapiano-v0-1-4", "lubapiano-v0-1-4-1", "lubapiano-v0-1-4-2", "lubapiano-v0-1-5", "jina-aplikace"],
     delete: async (nazev) => { smazane.push(nazev); return true; },
   };
   vm.runInNewContext(worker, {
@@ -33,6 +33,6 @@ test("aktivace nemaže cache LubaWallet ani jiných aplikací", async () => {
   let cekani;
   udalosti.get("activate")({waitUntil: (promise) => { cekani = promise; }});
   await cekani;
-  assert.deepEqual(smazane, ["lubapiano-v0-1-2", "lubapiano-v0-1-3", "lubapiano-v0-1-4", "lubapiano-v0-1-4-1", "lubapiano-v0-1-4-2"]);
+  assert.deepEqual(smazane, ["lubapiano-v0-1-2", "lubapiano-v0-1-3", "lubapiano-v0-1-4", "lubapiano-v0-1-4-1", "lubapiano-v0-1-4-2", "lubapiano-v0-1-5"]);
   assert.equal(klientPrevzat, true);
 });

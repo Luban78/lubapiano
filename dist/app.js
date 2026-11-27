@@ -1,6 +1,6 @@
 "use strict";
 
-// LubaPiano 0.1. All exercise generation and scoring happens on this device.
+// LubaPiano 0.1.5.1. All exercise generation and scoring happens on this device.
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CELKEM = 20;
 const NAZVY = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "B", "H"];
@@ -177,9 +177,12 @@ function vykresliOsnovu() {
   const vyska = Math.max(125, Math.round(ui.svg.getBoundingClientRect().height || 215));
   const {caraX, rozestup, nastup} = rozvrhOsnovy(sirka, volba.preview);
   const dvojita = volba.clef === "both";
-  const dualRoztec = Math.max(11, Math.min(17, (vyska - 36) / 8));
-  const mezera = Math.max(14, dualRoztec * 1.25);
-  const trebleTop = Math.max(5, (vyska - 8 * dualRoztec - mezera) / 2);
+  // Velké fontové symboly klíčů nesmí zasahovat do druhé osnovy.
+  // Na krátkém landscape se proto zmenšuje rozteč, mezera mezi
+  // osnovami však zůstává větší než dva řádky notové osnovy.
+  const dualRoztec = Math.max(9, Math.min(17, (vyska - 42) / 11));
+  const mezera = Math.max(25, dualRoztec * 2.6);
+  const trebleTop = Math.max(8, (vyska - 8 * dualRoztec - mezera) / 2);
   const bassTop = trebleTop + 4 * dualRoztec + mezera;
   const rozvrh = {trebleTop, bassTop, dualRoztec};
   if (stavSvg && spusteno && !hotovo && volba.mode === "moving") {
@@ -203,8 +206,9 @@ function vykresliOsnovu() {
       podklad.append(svg("line", {x1: 12, x2: sirka - 12, y1: osnova.top + i * osnova.roztec, y2: osnova.top + i * osnova.roztec, stroke: "#abc2c8", "stroke-width": 1.35}));
     }
     const houslovy = osnova.klic === "treble";
-    const glyphY = dvojita ? osnova.top + (houslovy ? 5.2 : 2.9) * osnova.roztec : (houslovy ? 146 : 108);
-    podklad.append(svg("text", {x: 18, y: glyphY, "font-family": "Noto Music, Segoe UI Symbol, serif", "font-size": dvojita ? (houslovy ? 68 : 60) : (houslovy ? 82 : 76), fill: "#e9f5f6"}, houslovy ? "𝄞" : "𝄢"));
+    const glyphY = dvojita ? osnova.top + (houslovy ? 4.15 : 2.9) * osnova.roztec : (houslovy ? 146 : 108);
+    const glyphSize = dvojita ? Math.min(houslovy ? 59 : 47, osnova.roztec * (houslovy ? 4.5 : 3.9)) : (houslovy ? 82 : 76);
+    podklad.append(svg("text", {x: 18, y: glyphY, "font-family": "Noto Music, Segoe UI Symbol, serif", "font-size": glyphSize, fill: "#e9f5f6"}, houslovy ? "𝄞" : "𝄢"));
   }
   if (!dvojita) podklad.append(svg("text", {x: 33, y: 185, "text-anchor": "middle", "font-size": 11, "font-weight": "700", fill: "#9abdc5"}, volba.clef === "treble" ? "G" : "F"));
   ui.svg.append(podklad);

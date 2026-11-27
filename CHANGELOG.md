@@ -1,5 +1,11 @@
 # LubaPiano – historie verzí
 
+## 0.1.5.1 – čistší dvojitá osnova a oprava mobilního výběru
+
+- Houslový a basový klíč mají v režimu „Oba“ menší symboly a větší mezeru mezi osnovami, aby se nepřekrývaly.
+- Rozteč linek dvojité osnovy se více přizpůsobuje výšce displeje, zejména na šířku.
+- Na úzkém telefonu jsou přepínače Trénink, Notový klíč a Odpověď v samostatných řadách. Volba „Oba“ už nepřetéká mimo obrazovku.
+
 ## 0.1.5 – čtení oběma rukama a oprava široké osnovy
 
 - Na šířku vyplňuje notová osnova celou dostupnou šířku, nikoli jen levou část obrazovky.

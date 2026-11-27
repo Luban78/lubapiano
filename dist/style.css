@@ -141,6 +141,11 @@ h1,h2,h3,p { margin: 0; }
 }
 @media (max-width: 460px) {
   .app-shell { padding-inline: 10px; }
+  /* Tři klíče se vedle půlky šířky telefonu nevejdou. */
+  .setup-grid { grid-template-columns: minmax(0, 1fr); }
+  .setup-grid fieldset:last-child { grid-column: auto; }
+  .setup-grid .segmented { min-width: 0; }
+  .setup-grid .segment { min-width: 0; }
   .setup-card,.practice-area,.input-card { padding: 12px; border-radius: 15px; }
   .setup-grid { gap: 9px; }
   .control-group legend { margin-bottom: 4px; }

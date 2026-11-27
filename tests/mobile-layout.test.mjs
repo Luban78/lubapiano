@@ -49,3 +49,9 @@ test("landscape s plnou šířkou má dvě oktávy, úzký telefon jednu", () =>
   assert.equal(jenJednaOktava(700, 1200, 800), false);
   assert.equal(jenJednaOktava(360, 360, 800), true);
 });
+
+test("úzký telefon skládá výběr tří notových klíčů do celé řady", () => {
+  const css = readFileSync(new URL("../dist/style.css", import.meta.url), "utf8");
+  assert.match(css, /@media \(max-width: 460px\) \{[\s\S]*?\.setup-grid \{ grid-template-columns: minmax\(0, 1fr\); \}/);
+  assert.match(css, /\.setup-grid \.segment \{ min-width: 0; \}/);
+});
