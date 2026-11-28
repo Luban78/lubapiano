@@ -136,6 +136,14 @@ h1,h2,h3,p { margin: 0; }
 .academy-mastered { font-size: 14px; font-weight: 750; color: #8cecdf; margin-top: 11px; }
 .academy-start { display: flex; gap: 9px; }
 .academy-start button { min-width: 0; }
+.academy-motion, .academy-tempo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 9px; padding-top: 12px; color: #b8d6dd; font-size: 14px; }
+.academy-motion .segmented { max-width: 460px; }
+.academy-motion .segment { white-space: normal; line-height: 1.25; }
+.academy-tempo[hidden] { display: none; }
+.academy-tempo-control { display: flex; align-items: center; gap: 6px; border: 1px solid #376a79; border-radius: 12px; padding: 3px; background: #092c36; }
+.academy-tempo-control button { width: 43px; min-height: 40px; border: 0; border-radius: 9px; color: #e5fbfc; background: #194653; font-size: 24px; }
+.academy-tempo-control strong { min-width: 35px; text-align: right; color: #f1fbfc; font-size: 19px; font-variant-numeric: tabular-nums; }
+.academy-tempo-control span { padding-right: 6px; font-size: 12px; }
 .academy-answer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 9px; padding-top: 12px; font-size: 14px; color: #b8d6dd; }
 .academy-answer .segmented { max-width: 360px; }
 .app-shell.focus .learning-switch, .app-shell.focus .academy-panel { display: none; }
@@ -170,6 +178,7 @@ h1,h2,h3,p { margin: 0; }
   .academy-panel { padding: 12px; }
   .academy-heading h2 { font-size: 21px; }
   .academy-lead { font-size: 14px; }
+  .academy-motion .segmented { max-width: 100%; }
   .academy-answer .segmented { max-width: 100%; }
   .app-shell { padding-inline: 10px; }
   /* Tři klíče se vedle půlky šířky telefonu nevejdou. */

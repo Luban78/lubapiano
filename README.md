@@ -1,10 +1,11 @@
-# LubaPiano 0.1.6.0
+# LubaPiano 0.1.6.1
 
 První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vstupem z Kurzweil M90.
 
 ## Rozsah v0.1
 
-- **Akademie** je výchozí obrazovka výuky od úplných základů. První čtyři postupné lekce houslového klíče mají vlastní rozsahy not a vysvětlení. Každou lze neomezeně procvičovat bez časového limitu; k odemčení následující lekce jsou potřeba dvě samostatné zkoušky po 20 notách s výsledkem 100 %. Zkoušky dávají nové náhodné pořadí a hodnotí první pokus, chyby ve cvičení nejsou trestány. Pokrok Akademie se ukládá samostatně pouze do localStorage tohoto zařízení.
+- **Akademie** je výchozí obrazovka výuky od úplných základů. První čtyři postupné lekce houslového klíče mají vlastní rozsahy not a vysvětlení. Každou lze neomezeně procvičovat v režimu **Klid** nebo **Pohyb**; k odemčení následující lekce jsou potřeba dvě samostatné zkoušky po 20 notách s výsledkem 100 %. Zkoušky dávají nové náhodné pořadí a hodnotí první pokus, chyby ve cvičení nejsou trestány. Pokrok Akademie se ukládá samostatně pouze do localStorage tohoto zařízení.
+- V Akademii lze přepnout **Klid · plynulý posun** (po správné odpovědi nota během 320 ms odjede vlevo a další plynule přijede) nebo **Pohyb · pod tlakem** (nepřetržité čtení zprava). Pohyb má přímo u lekce nastavení 20–140 not/min. Akademie si na tomto zařízení pamatuje zvolený režim a tempo; výchozí je Pohyb na 55 not/min. Přepnutí režimu připraví novou sérii, rozehraná série se tak nepletě s novým časováním.
 - Přepínač **Volný trénink** zachovává veškeré dosavadní režimy, včetně pohyblivých not, obou klíčů, osobního rekordu a MIDI. Návrat z Akademie obnoví nastavení volného tréninku.
 - Houslový, basový nebo obě osnovy najednou (mobilní trénink náhodného střídání klíčů).
 - Klidný režim a pohyblivé noty s nastavitelným tempem 20–140 not/min.

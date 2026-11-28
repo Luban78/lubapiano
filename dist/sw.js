@@ -1,4 +1,4 @@
-const CACHE = "lubapiano-v0-1-6-0";
+const CACHE = "lubapiano-v0-1-6-1";
 const CACHE_PREFIX = "lubapiano-";
 const ASSETS = ["./", "./index.html", "./style.css", "./app.js", "./manifest.webmanifest", "./icons/lubapiano.svg", "./icons/lubapiano-192.png", "./icons/lubapiano-512.png"];
 self.addEventListener("install", (event) => {

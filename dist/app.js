@@ -1,6 +1,6 @@
 "use strict";
 
-// LubaPiano 0.1.6.0. All exercise generation, teaching and scoring happens on this device.
+// LubaPiano 0.1.6.1. All exercise generation, teaching and scoring happens on this device.
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CELKEM = 20;
 const NAZVY = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "B", "H"];
@@ -28,6 +28,8 @@ const LEKCE = [
   {nazev: "Noty pod osnovou", noty: [60, 62, 64, 65, 67, 69, 71, 72], rada: "Poznáš C4 na pomocné lince a D4 těsně pod osnovou? Zamíchej je s notami, které už znáš."},
 ];
 const AKADEMIE_KLIC = "lubapiano-akademie-01";
+const AKADEMIE_VOLBY_KLIC = "lubapiano-akademie-volby-01";
+const TRVANI_POSUNU_KLIDU = 320;
 
 const ui = {
   shell: document.querySelector(".app-shell"),
@@ -38,6 +40,10 @@ const ui = {
   academyLessonTitle: document.getElementById("academyLessonTitle"),
   academyCoach: document.getElementById("academyCoach"),
   academyMastered: document.getElementById("academyMastered"),
+  academyTempo: document.getElementById("academyTempo"),
+  academyTempoValue: document.getElementById("academyTempoValue"),
+  academyTempoMinus: document.getElementById("academyTempoMinus"),
+  academyTempoPlus: document.getElementById("academyTempoPlus"),
   lessonPractice: document.getElementById("lessonPractice"),
   lessonExam: document.getElementById("lessonExam"),
   svg: document.getElementById("musicSheet"),
@@ -99,6 +105,7 @@ let rucnePozastaveno = false;
 let cekamNaOpravu = false;
 let hotovo = false;
 let stavSvg = null;
+let animaceKlidu = null;
 let midiPristup = null;
 let midiVstup = null;
 let midiAktivni = new Set();
@@ -111,6 +118,24 @@ let vybranaLekce = 0;
 let lekceRezim = "practice";
 let volnaNastaveni = {...volba};
 let postupAkademie = nactiPostupAkademie();
+let akademieVolby = nactiVolbyAkademie();
+
+function nactiVolbyAkademie() {
+  try {
+    const ulozene = JSON.parse(localStorage.getItem(AKADEMIE_VOLBY_KLIC) || "{}");
+    return {mode: ulozene.mode === "still" ? "still" : "moving", tempo: omezTempo(Number(ulozene.tempo) || 55)};
+  } catch { return {mode: "moving", tempo: 55}; }
+}
+
+function ulozVolbyAkademie() {
+  try { localStorage.setItem(AKADEMIE_VOLBY_KLIC, JSON.stringify(akademieVolby)); }
+  catch { /* Trénink funguje i bez místního úložiště. */ }
+}
+
+function aktualizujRezimAkademie() {
+  document.querySelectorAll("button[data-academy-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.academyMode === volba.mode)));
+  ui.academyTempo.hidden = volba.mode !== "moving";
+}
 
 function nactiPostupAkademie() {
   try {
@@ -170,7 +195,7 @@ function prepniVyuku(rezim) {
   if (novaAkademie !== akademieAktivni) {
     if (novaAkademie) {
       volnaNastaveni = {...volba};
-      Object.assign(volba, {mode: "still", clef: "treble", answer: "keyboard"});
+      Object.assign(volba, {mode: akademieVolby.mode, tempo: akademieVolby.tempo, clef: "treble", answer: "keyboard"});
       vybranaLekce = postupAkademie.zkousky.findIndex((p) => p < 2);
       if (vybranaLekce < 0) vybranaLekce = LEKCE.length - 1;
       lekceRezim = "practice";
@@ -185,6 +210,8 @@ function prepniVyuku(rezim) {
   document.querySelectorAll("button[data-learning]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.learning === rezim)));
   for (const typ of ["mode", "clef", "answer"]) vyberTlacitko(typ, volba[typ]);
   document.querySelectorAll("button[data-academy-answer]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.academyAnswer === volba.answer)));
+  aktualizujRezimAkademie();
+  nastavTempo(volba.tempo);
   vykresliAkademii();
   ui.academyCoach.textContent = LEKCE[vybranaLekce].rada;
   vytvorKlaviaturu();
@@ -214,7 +241,7 @@ function vyhodnotLekci(spravne, presnost) {
   const spatneNoty = [...new Set(cviceni.filter((n) => n.stav !== "ok").map((n) => jmenoBezOktavy(n.midi)))];
   if (!zkouska) {
     ui.resultTitle.textContent = "První krok za tebou! 🎹";
-    ui.resultSummary.textContent = `Procvičeno ${spravne} z ${CELKEM} not. Až budeš připravený, zkus si bez časového tlaku zkoušku.`;
+    ui.resultSummary.textContent = `Procvičeno ${spravne} z ${CELKEM} not. Až budeš připravený, zkus zkoušku${volba.mode === "moving" ? " ve zvoleném tempu" : " bez časového tlaku"}.`;
     ui.resultAgain.textContent = "Přejít ke zkoušce 🎓";
   } else if (presnost < 100) {
     ui.resultTitle.textContent = "Tohle ještě doladíme ❤️";
@@ -341,6 +368,9 @@ function vytvorNotu(polozka, rozvrh) {
 }
 
 function vykresliOsnovu() {
+  // Při otočení nebo změně rozměrů starý animační snímek nesmí
+  // přesunout nově vytvořenou SVG osnovu.
+  animaceKlidu = null;
   const sirka = Math.max(280, Math.round(ui.svg.getBoundingClientRect().width || 720));
   const vyska = Math.max(125, Math.round(ui.svg.getBoundingClientRect().height || 215));
   const {caraX, rozestup, nastup} = rozvrhOsnovy(sirka, volba.preview);
@@ -400,7 +430,9 @@ function vykresliOsnovu() {
 
 function posunNot() {
   if (!stavSvg) return;
-  const posun = stavSvg.caraX + (volba.mode === "moving" ? stavSvg.nastup - pozice : -index) * stavSvg.rozestup;
+  const posun = volba.mode === "moving"
+    ? stavSvg.caraX + (stavSvg.nastup - pozice) * stavSvg.rozestup
+    : animaceKlidu?.osnova === stavSvg ? animaceKlidu.aktualniX : stavSvg.caraX - index * stavSvg.rozestup;
   stavSvg.skupinaNot.setAttribute("transform", `translate(${posun.toFixed(2)} 0)`);
   for (let i = 0; i < cviceni.length; i += 1) {
     const polozka = cviceni[i];
@@ -427,6 +459,37 @@ function posunNot() {
       polozka.kresba.kryti = kryti;
     }
   }
+}
+
+function zahajPosunKlidu() {
+  if (!stavSvg || volba.mode !== "still" || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+    posunNot();
+    return;
+  }
+  // Začínáme přesně na poloze před správnou odpovědí. Notová skupina
+  // se celá posune o jeden rozestup, takže nic nepřeskakuje.
+  const zacatekX = stavSvg.caraX - (index - 1) * stavSvg.rozestup;
+  animaceKlidu = {
+    osnova: stavSvg,
+    zacatekX,
+    cilX: zacatekX - stavSvg.rozestup,
+    aktualniX: zacatekX,
+    zacatekCas: null,
+  };
+  posunNot();
+  requestAnimationFrame(animujKlid);
+}
+
+function animujKlid(cas) {
+  const animace = animaceKlidu;
+  if (!animace || animace.osnova !== stavSvg || volba.mode !== "still") return;
+  if (animace.zacatekCas === null) animace.zacatekCas = cas;
+  const ubehlo = Math.max(0, Math.min(1, (cas - animace.zacatekCas) / TRVANI_POSUNU_KLIDU));
+  const hladce = ubehlo < .5 ? 4 * ubehlo ** 3 : 1 - (-2 * ubehlo + 2) ** 3 / 2;
+  animace.aktualniX = animace.zacatekX + (animace.cilX - animace.zacatekX) * hladce;
+  posunNot();
+  if (ubehlo < 1) requestAnimationFrame(animujKlid);
+  else { animaceKlidu = null; posunNot(); }
 }
 
 function vygenerujCviceni() {
@@ -496,6 +559,7 @@ function zobrazVysledky(spravne, presnost, rekord, nejlepsi) {
 
 function pripravCviceni() {
   skryjVysledky();
+  animaceKlidu = null;
   panelPozastavilHru = false;
   orientaceGenerovani = window.innerWidth > window.innerHeight;
   cviceni = vygenerujCviceni();
@@ -514,10 +578,14 @@ function pripravCviceni() {
   ui.practiceTitle.textContent = akademieAktivni ? `Lekce ${vybranaLekce + 1}: ${LEKCE[vybranaLekce].nazev}` : "Poznávání not";
   ui.clefCaption.textContent = volba.clef === "both" ? "𝄞 + 𝄢 Střídání klíčů" : volba.clef === "treble" ? "𝄞 Houslový klíč" : "𝄢 Basový klíč";
   ui.modeCaption.textContent = volba.mode === "moving" ? "Noty přijíždějí zprava" : "Noty čekají na odpověď";
-  ui.instructions.textContent = akademieAktivni ? lekceRezim === "exam" ? "Zkouška: dvacet náhodných not. Na první pokus musí být všechny správně. Bez časového tlaku." : "Trénink: hraj zvýrazněnou notu. Když se spleteš, nic se neděje — zkus to znovu." : volba.clef === "both" ? "Sleduj obě osnovy. Pokaždé zahraj jen jednu notu z právě aktivního klíče." : volba.mode === "moving" ? "Hraj u modré čáry. Očima už sleduj i další noty." : "Zahraj zvýrazněnou notu. Další přijde po tvé odpovědi.";
+  ui.instructions.textContent = akademieAktivni
+    ? lekceRezim === "exam"
+      ? `Zkouška: dvacet náhodných not. Na první pokus musí být všechny správně.${volba.mode === "moving" ? " V pohybu rozhoduje i tempo." : " Bez časového tlaku."}`
+      : volba.mode === "moving" ? "Trénink: hraj u modré čáry. Sleduj další noty, které přijíždějí zprava." : "Trénink: hraj zvýrazněnou notu. Když se spleteš, nic se neděje — zkus to znovu."
+    : volba.clef === "both" ? "Sleduj obě osnovy. Pokaždé zahraj jen jednu notu z právě aktivního klíče." : volba.mode === "moving" ? "Hraj u modré čáry. Očima už sleduj i další noty." : "Zahraj zvýrazněnou notu. Další přijde po tvé odpovědi.";
   zmenaStatistik();
   vykresliOsnovu();
-  zpetnaVazba(akademieAktivni ? (lekceRezim === "exam" ? "Připraven na zkoušku. Žádný spěch. 🎓" : "Učíme se spolu. Klidně si dej na čas. ❤️") : "Připraveno. Stiskni „Začít“ a hraj.");
+  zpetnaVazba(akademieAktivni ? (volba.mode === "moving" ? `Připraveno! Noty pojedou tempem ${volba.tempo} not/min. 🎹` : lekceRezim === "exam" ? "Připraven na zkoušku. Žádný spěch. 🎓" : "Učíme se spolu. Klidně si dej na čas. ❤️") : "Připraveno. Stiskni „Začít“ a hraj.");
 }
 
 function konciCviceni() {
@@ -616,6 +684,9 @@ function odpovez(midi, jenNazev = false) {
     return;
   }
   if (!bezi && !cekamNaOpravu) return;
+  // Během přejezdu v klidném režimu čekáme na další notu;
+  // rychlé opakované klepnutí nesmí přeskočit dva kroky.
+  if (volba.mode === "still" && typeof animaceKlidu !== "undefined" && animaceKlidu) return;
   const nota = cviceni[index];
   if (!nota) return;
   if (volba.mode === "moving" && !cekamNaOpravu) {
@@ -658,7 +729,8 @@ function odpovez(midi, jenNazev = false) {
     }
   }
   zmenaStatistik();
-  posunNot();
+  if (spravne && volba.mode === "still" && index < CELKEM && typeof zahajPosunKlidu === "function") zahajPosunKlidu();
+  else posunNot();
   if (index >= CELKEM) konciCviceni();
 }
 
@@ -925,8 +997,15 @@ function nastavTempo(tempo) {
   ui.tempo.value = String(volba.tempo);
   ui.tempoValue.textContent = String(volba.tempo);
   ui.quickTempoValue.textContent = String(volba.tempo);
+  ui.academyTempoValue.textContent = String(volba.tempo);
   ui.tempoMinus.disabled = volba.tempo <= 20;
   ui.tempoPlus.disabled = volba.tempo >= 140;
+  ui.academyTempoMinus.disabled = volba.tempo <= 20;
+  ui.academyTempoPlus.disabled = volba.tempo >= 140;
+  if (akademieAktivni) {
+    akademieVolby.tempo = volba.tempo;
+    ulozVolbyAkademie();
+  }
 }
 
 function nastavNahled(pocet) {
@@ -974,6 +1053,15 @@ function pripravOvladani() {
   });
   document.querySelectorAll("button[data-mode]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("mode", button.dataset.mode)));
   document.querySelectorAll("button[data-learning]").forEach((button) => button.addEventListener("click", () => prepniVyuku(button.dataset.learning)));
+  document.querySelectorAll("button[data-academy-mode]").forEach((button) => button.addEventListener("click", () => {
+    if (!akademieAktivni || volba.mode === button.dataset.academyMode) return;
+    volba.mode = button.dataset.academyMode;
+    akademieVolby.mode = volba.mode;
+    ulozVolbyAkademie();
+    aktualizujRezimAkademie();
+    vyberTlacitko("mode", volba.mode);
+    pripravCviceni();
+  }));
   document.querySelectorAll("button[data-academy-answer]").forEach((button) => button.addEventListener("click", () => {
     zmenNastaveni("answer", button.dataset.academyAnswer);
     document.querySelectorAll("button[data-academy-answer]").forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
@@ -988,6 +1076,8 @@ function pripravOvladani() {
   ui.tempo.addEventListener("input", () => nastavTempo(Number(ui.tempo.value)));
   ui.tempoMinus.addEventListener("click", () => nastavTempo(volba.tempo - 5));
   ui.tempoPlus.addEventListener("click", () => nastavTempo(volba.tempo + 5));
+  ui.academyTempoMinus.addEventListener("click", () => nastavTempo(volba.tempo - 5));
+  ui.academyTempoPlus.addEventListener("click", () => nastavTempo(volba.tempo + 5));
   ui.preview.addEventListener("input", () => nastavNahled(Number(ui.preview.value)));
   ui.start.addEventListener("click", () => {
     spustCviceni();

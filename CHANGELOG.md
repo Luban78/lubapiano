@@ -1,5 +1,11 @@
 # LubaPiano – historie verzí
 
+## 0.1.6.1 – plynulé kroky a pohyb i v Akademii
+
+- Akademie má vlastní přepínač **Klid / Pohyb** a rychlost pohybu od 20 do 140 not za minutu. Tempo a režim si lokálně pamatuje, nastavení Volného tréninku se nemění.
+- Správně zahraná nota v Klidu neodskočí: celá osnova s notami se během 320 ms plynule posune o jeden krok doleva. Během přechodu se ignoruje náhodné dvojité klepnutí a respektuje se systémová předvolba omezeného pohybu.
+- Pohyb v Akademii zůstává kontinuální a funguje v procvičování i zkouškách. Zpětná vazba i pokyny uvádějí správný režim.
+
 ## 0.1.6.0 – první LubaPiano Akademie
 
 - Dvě vstupní cesty: Akademie pro úplné začátečníky a dosavadní Volný trénink s původními nastaveními.

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#082630" />
   <meta name="description" content="LubaPiano – uč se poznávat noty, číst dopředu a hrát na skutečném pianu." />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>LubaPiano 0.1.6.0 · Akademie čtení not</title>
+  <title>LubaPiano 0.1.6.1 · Akademie čtení not</title>
   <link rel="icon" href="./icons/lubapiano.svg" type="image/svg+xml" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./style.css" />
@@ -18,7 +18,7 @@
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">♫</div>
         <div>
-          <h1>Luba<span>Piano</span><small class="brand-version">0.1.6.0</small></h1>
+          <h1>Luba<span>Piano</span><small class="brand-version">0.1.6.1</small></h1>
           <p>Čti noty. Hraj hudbu.</p>
         </div>
       </div>
@@ -56,6 +56,21 @@
         <div class="academy-start">
           <button type="button" id="lessonPractice" class="primary-button">Procvičovat 🎹</button>
           <button type="button" id="lessonExam" class="secondary-button">Zkouška 🎓</button>
+        </div>
+        <div class="academy-motion">
+          <span>Jak se noty pohybují:</span>
+          <div class="segmented" role="group" aria-label="Pohyb not v Akademii">
+            <button class="segment" data-academy-mode="still" type="button" aria-pressed="false">Klid · plynulý posun</button>
+            <button class="segment" data-academy-mode="moving" type="button" aria-pressed="true">Pohyb · pod tlakem</button>
+          </div>
+        </div>
+        <div class="academy-tempo" id="academyTempo">
+          <span>Rychlost pohybu</span>
+          <div class="academy-tempo-control" aria-label="Tempo Akademie">
+            <button type="button" id="academyTempoMinus" aria-label="Zpomalit o pět not za minutu">−</button>
+            <strong id="academyTempoValue">55</strong><span>not/min</span>
+            <button type="button" id="academyTempoPlus" aria-label="Zrychlit o pět not za minutu">+</button>
+          </div>
         </div>
         <div class="academy-answer">
           <span>Na mobilu odpovídat:</span>
@@ -191,7 +206,7 @@
         <button id="midiButton" type="button" class="midi-button">Připojit MIDI</button>
       </section>
 
-      <footer class="footer">LubaPiano 0.1.6.0 · Tvůj postup zůstává v tomto zařízení · Offline po načtení aplikace</footer>
+      <footer class="footer">LubaPiano 0.1.6.1 · Tvůj postup zůstává v tomto zařízení · Offline po načtení aplikace</footer>
     </main>
   </div>
 
