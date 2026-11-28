@@ -1,5 +1,12 @@
 # LubaPiano – historie verzí
 
+## 0.1.5.6 – přesné oktávy, MIDI plocha a hladší pohyb
+
+- Tlačítko Zavřít ve výsledkovém modalu opustí Soustředění a zobrazí běžné ovládání. Další cvičení dál spustí nový trénink bez rušení.
+- Ve dvouoktávové klaviatuře na šířku se u samostatného houslového a basového klíče vyžaduje přesná oktáva, včetně popisků C4/C5 (nebo C2/C3). Na výšku a při střídání obou klíčů dál stačí název, aby neubyly žádné procvičované noty. USB MIDI vždy vyžaduje správnou oktávu.
+- Při připojeném MIDI vstupu se virtuální klaviatura automaticky schová a osnova dostane více prostoru. Po odpojení se klaviatura vrátí.
+- Posun not se optimalizoval na jednu transformaci společné SVG skupiny za snímek; jednotlivé noty už nepřepisují barvy, průhlednost a viditelnost v každém snímku.
+
 ## 0.1.5.5 – výsledky po poslední notě
 
 - Po dokončení všech 20 not se automaticky ukáže výsledkový modal nad osnovou i klaviaturou, včetně režimu Soustředění na šířku.

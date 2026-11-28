@@ -1,6 +1,6 @@
 "use strict";
 
-// LubaPiano 0.1.5.5. All exercise generation and scoring happens on this device.
+// LubaPiano 0.1.5.6. All exercise generation and scoring happens on this device.
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CELKEM = 20;
 const NAZVY = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "B", "H"];
@@ -122,6 +122,12 @@ function jenJednaOktava(sirkaKlaviatury, sirkaOkna, vyskaOkna) {
   return sirkaKlaviatury < 616;
 }
 
+function presnaDotykovaOdpoved(sirkaKlaviatury, sirkaOkna, vyskaOkna, klic) {
+  // Jen při hře na šířku, kdy obě oktávy opravdu vidíme. Střídání obou
+  // klíčů zatím přesahuje rozsah této dvouoktávové klaviatury.
+  return sirkaOkna > vyskaOkna && !jenJednaOktava(sirkaKlaviatury, sirkaOkna, vyskaOkna) && klic !== "both";
+}
+
 // Rozestupy přizpůsobujeme šířce tak, aby se další nota vždy přihnala
 // zpoza pravého okraje, a ne náhle objevila uprostřed osnovy.
 function rozvrhOsnovy(sirka, preview) {
@@ -234,33 +240,50 @@ function vykresliOsnovu() {
   ui.svg.append(podklad);
 
   const skupinaNot = svg("g");
-  for (const polozka of cviceni) skupinaNot.append(vytvorNotu(polozka, rozvrh));
+  for (let i = 0; i < cviceni.length; i += 1) {
+    const skupina = vytvorNotu(cviceni[i], rozvrh);
+    // Každá nota zůstane na pevné místní souřadnici. V každém snímku
+    // pak posouváme jen společného rodiče, ne všech 20 SVG skupin.
+    skupina.setAttribute("transform", `translate(${(i * rozestup).toFixed(2)} 0)`);
+    skupinaNot.append(skupina);
+  }
   ui.svg.append(skupinaNot);
   const caraHorni = dvojita ? Math.max(4, prvniTop - 9) : 34;
   const caraDolni = dvojita ? Math.min(vyska - 4, posledniSpodek + 9) : 165;
   ui.svg.append(svg("line", {x1: caraX, x2: caraX, y1: caraHorni, y2: caraDolni, stroke: "#61dce9", "stroke-width": 2.8, "stroke-linecap": "round"}));
   ui.svg.append(svg("path", {d: `M ${caraX-7} ${caraHorni-4} L ${caraX+7} ${caraHorni-4} L ${caraX} ${caraHorni+5} Z`, fill: "#61dce9"}));
-  stavSvg = {sirka, caraX, rozestup, nastup};
+  stavSvg = {sirka, caraX, rozestup, nastup, skupinaNot};
   posunNot();
 }
 
 function posunNot() {
   if (!stavSvg) return;
+  const posun = stavSvg.caraX + (volba.mode === "moving" ? stavSvg.nastup - pozice : -index) * stavSvg.rozestup;
+  stavSvg.skupinaNot.setAttribute("transform", `translate(${posun.toFixed(2)} 0)`);
   for (let i = 0; i < cviceni.length; i += 1) {
     const polozka = cviceni[i];
-    const x = stavSvg.caraX + (volba.mode === "moving" ? i + stavSvg.nastup - pozice : i - index) * stavSvg.rozestup;
+    const x = posun + i * stavSvg.rozestup;
     // V pohybu rozhoduje skutečná poloha: počítadlo náhledu nesmí
     // další notu náhle odkrýt až uprostřed obrazovky.
     const viditelna = i >= index - 1 && (volba.mode === "moving" || i <= index + volba.preview) && x >= -35 && x <= stavSvg.sirka + 35;
-    polozka.kresba.skupina.setAttribute("visibility", viditelna ? "visible" : "hidden");
-    if (!viditelna) continue;
-    polozka.kresba.skupina.setAttribute("transform", `translate(${x.toFixed(2)} 0)`);
-    for (const kresba of polozka.kresba.noty) {
-      const barva = barvaNoty(polozka, i === index);
-      kresba.hlavicka.setAttribute("fill", barva);
-      kresba.stonek.setAttribute("stroke", barva);
+    if (polozka.kresba.viditelna !== viditelna) {
+      polozka.kresba.skupina.setAttribute("visibility", viditelna ? "visible" : "hidden");
+      polozka.kresba.viditelna = viditelna;
     }
-    polozka.kresba.skupina.setAttribute("opacity", polozka.stav ? .75 : i === index ? 1 : .93);
+    if (!viditelna) continue;
+    const barva = barvaNoty(polozka, i === index);
+    for (const kresba of polozka.kresba.noty) {
+      if (kresba.barva !== barva) {
+        kresba.hlavicka.setAttribute("fill", barva);
+        kresba.stonek.setAttribute("stroke", barva);
+        kresba.barva = barva;
+      }
+    }
+    const kryti = polozka.stav ? .75 : i === index ? 1 : .93;
+    if (polozka.kresba.kryti !== kryti) {
+      polozka.kresba.skupina.setAttribute("opacity", kryti);
+      polozka.kresba.kryti = kryti;
+    }
   }
 }
 
@@ -499,6 +522,7 @@ function vytvorKlaviaturu() {
   const sirka = ui.keyboard.clientWidth || 660;
   // Na úzkém mobilu sedm bílých kláves; v širokém landscape 14 pro přiměřenou velikost.
   const kompaktni = jenJednaOktava(sirka, window.innerWidth, window.innerHeight);
+  const presnaOktava = presnaDotykovaOdpoved(sirka, window.innerWidth, window.innerHeight, volba.clef);
   const konec = zacatek + (kompaktni ? 11 : 23);
   const bileW = sirka / (kompaktni ? 7 : 14);
   let bilyIndex = 0;
@@ -508,7 +532,7 @@ function vytvorKlaviaturu() {
     klavesa.type = "button";
     klavesa.className = `piano-key ${bila ? "white" : "black"}`;
     klavesa.dataset.midi = String(midi);
-    klavesa.setAttribute("aria-label", `Nota ${jmenoBezOktavy(midi)} (libovolná oktáva)`);
+    klavesa.setAttribute("aria-label", presnaOktava ? `Nota ${nazevNoty(midi)}` : `Nota ${jmenoBezOktavy(midi)} (libovolná oktáva)`);
     const klavesaSirka = bila ? bileW : bileW * .63;
     const left = bila ? bilyIndex * bileW : bilyIndex * bileW - klavesaSirka / 2;
     klavesa.style.width = `${klavesaSirka}px`;
@@ -518,12 +542,12 @@ function vytvorKlaviaturu() {
       if (midi % 12 === 0) {
         const popis = document.createElement("span");
         popis.className = "piano-label";
-        popis.textContent = "C";
+        popis.textContent = presnaOktava ? nazevNoty(midi) : "C";
         klavesa.append(popis);
       }
     }
-    // Dotyk rozpoznává název tónu. USB MIDI vyhodnocuje přesnou výšku.
-    klavesa.addEventListener("click", () => odpovez(midi, true));
+    // Na široké klaviatuře kontrolujeme i oktávu; MIDI ji hlídá vždy.
+    klavesa.addEventListener("click", () => odpovez(midi, !presnaOktava));
     ui.keyboard.append(klavesa);
   }
   ui.keyboard.style.minWidth = "0";
@@ -547,7 +571,10 @@ function prepniOdpoved() {
   ui.keyboard.hidden = !klaviatura;
   ui.names.hidden = klaviatura;
   ui.inputTitle.textContent = klaviatura ? "Klaviatura" : "Názvy not";
-  ui.inputHint.textContent = klaviatura ? "Dotyk: správný název noty platí v každé oktávě, bez posouvání klaviatury. MIDI piano: kontrolujeme i oktávu." : "Vyber C, D, E, F, G, A nebo H. V tomto režimu nezáleží na oktávě.";
+  const presnaOktava = presnaDotykovaOdpoved(ui.keyboard.clientWidth || 660, window.innerWidth, window.innerHeight, volba.clef);
+  ui.inputHint.textContent = klaviatura
+    ? (presnaOktava ? "Dotyk: na široké klaviatuře musí sedět i oktáva. MIDI ji kontroluje vždy." : "Dotyk: platí název noty bez ohledu na oktávu. MIDI kontroluje přesnou výšku.")
+    : "Vyber C, D, E, F, G, A nebo H. V tomto režimu nezáleží na oktávě.";
 }
 
 function vyberTlacitko(typ, hodnota) {
@@ -559,7 +586,7 @@ function zmenNastaveni(typ, hodnota) {
   vyberTlacitko(typ, hodnota);
   if (typ === "answer") { prepniOdpoved(); return; }
   if (typ === "error") return;
-  if (typ === "clef") { vytvorKlaviaturu(); vytvorNazvy(); }
+  if (typ === "clef") { vytvorKlaviaturu(); vytvorNazvy(); prepniOdpoved(); }
   pripravCviceni();
 }
 
@@ -614,6 +641,7 @@ async function nastavOrientaci(orientace, zTlacitka = false) {
     requestAnimationFrame(() => {
       vykresliOsnovu();
       vytvorKlaviaturu();
+      prepniOdpoved();
       if (ui.shell.classList.contains("focus")) window.scrollTo(0, 0);
     });
   }
@@ -652,6 +680,7 @@ async function obnovMidi() {
     midiAktivni.clear();
     ui.shell.classList.remove("midi-ready");
     ui.midiStatus.textContent = "Piano nenalezeno. Zkontroluj USB kabel.";
+    requestAnimationFrame(vykresliOsnovu);
     return;
   }
   const vstup = vstupy[0];
@@ -665,6 +694,7 @@ async function obnovMidi() {
     ui.midi.textContent = "Znovu hledat";
     ui.shell.classList.add("midi-ready");
     zpetnaVazba("Kurzweil je připraven! 🎹 Můžeš hrát na skutečném pianu.", "good");
+    requestAnimationFrame(vykresliOsnovu);
   } catch (chyba) {
     ui.midiStatus.textContent = `Nelze otevřít MIDI: ${chyba.message || chyba}`;
   }
@@ -724,6 +754,7 @@ function nastavSoustredeni(aktivni) {
   requestAnimationFrame(() => {
     vykresliOsnovu();
     vytvorKlaviaturu();
+    prepniOdpoved();
   });
 }
 
@@ -767,7 +798,8 @@ function pripravOvladani() {
   });
   ui.resultClose.addEventListener("click", () => {
     skryjVysledky();
-    (jeLandscapeSoustredeni() ? ui.scoreControlsButton : ui.start).focus({preventScroll: true});
+    if (ui.shell.classList.contains("focus")) nastavSoustredeni(false);
+    ui.start.focus({preventScroll: true});
   });
   document.addEventListener("keydown", (event) => {
     if (ui.resultOverlay.hidden) return;
@@ -821,6 +853,7 @@ function pripravOvladani() {
     if (volba.clef === "both" && !spusteno && orientaceGenerovani !== naSirku) pripravCviceni();
     else vykresliOsnovu();
     vytvorKlaviaturu();
+    prepniOdpoved();
     aktualizujTlacitkoOtoceni();
     if (ui.shell.classList.contains("focus")) window.scrollTo(0, 0);
   });

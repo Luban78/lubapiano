@@ -41,6 +41,13 @@ test("landscape má osnovu nad klaviaturou přes celou šířku", () => {
   assert.match(css, /\.app-shell\.focus \.update-notice \{ display: none; \}/);
 });
 
+test("připojené MIDI uvolní místo osnově a zavření výsledku opustí soustředění", () => {
+  assert.match(css, /\.app-shell\.midi-ready \.input-card \{ display: none; \}/);
+  assert.match(zdroj, /ui\.shell\.classList\.add\("midi-ready"\)/);
+  assert.match(zdroj, /ui\.shell\.classList\.remove\("midi-ready"\)/);
+  assert.match(zdroj, /ui\.resultClose\.addEventListener\("click", \(\) => \{[\s\S]*?if \(ui\.shell\.classList\.contains\("focus"\)\) nastavSoustredeni\(false\)/);
+});
+
 test("tempo i ovládání se na šířku přesune nahoru, po návratu zpět", () => {
   const tempo = {parentElement: null};
   const play = {parentElement: null};
@@ -132,6 +139,7 @@ test("otočení tlačítkem vyžádá fullscreen před zamknutím orientace", as
     requestAnimationFrame: (fn) => fn(),
     vykresliOsnovu: () => {},
     vytvorKlaviaturu: () => {},
+    prepniOdpoved: () => {},
     ui: {shell: {classList: {contains: () => false}}},
   });
   await nastav("landscape", true);
@@ -160,6 +168,7 @@ test("zamítnuté otočení vrátí aplikaci z fullscreen a neschová chybu", as
     requestAnimationFrame: (fn) => fn(),
     vykresliOsnovu: () => {},
     vytvorKlaviaturu: () => {},
+    prepniOdpoved: () => {},
     ui: {shell: {classList: {contains: () => false}}},
   });
   await nastav("landscape", true);

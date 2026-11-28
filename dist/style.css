@@ -254,6 +254,9 @@ h1,h2,h3,p { margin: 0; }
   .app-shell.focus .score-controls-button:focus-visible { outline: 3px solid #9df1fa; outline-offset: -5px; }
 }
 
+/* Skutečné MIDI piano nahrazuje virtuální klaviaturu v každém rozložení. */
+.app-shell.midi-ready .input-card { display: none; }
+
 /* Výsledek je jediná obrazovka, která smí po dohrání překrýt soustředění. */
 .result-overlay[hidden], .result-record[hidden] { display: none; }
 .result-overlay { position: fixed; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); background: rgba(3, 19, 27, .88); backdrop-filter: blur(7px); }
