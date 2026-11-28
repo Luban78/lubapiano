@@ -1,5 +1,11 @@
 # LubaPiano – historie verzí
 
+## 0.1.5.4 – noty přijíždějí opravdu zprava
+
+- Nové noty v pohyblivém cvičení začínají za pravým okrajem osnovy, i na širokém telefonu na šířku.
+- Rozestupy respektují velikost obrazovky a počet not ve výhledu. Žádná další nota už nevyskočí najednou uprostřed obrazovky po odehrání předchozí.
+- Tempo, hodnocení i čisté soustředěné rozložení zůstávají zachované.
+
 ## 0.1.5.3 – soustředění jen na noty a klávesy
 
 - Na šířku v režimu Soustředění není při hraní vidět žádné tlačítko, tempo, hlášení ani statistika. Osnova se protáhne nahoru, klaviatura je vyšší a obě zabírají celou šířku displeje.

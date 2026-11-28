@@ -1,4 +1,4 @@
-# LubaPiano 0.1.5.3
+# LubaPiano 0.1.5.4
 
 První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vstupem z Kurzweil M90.
 
@@ -20,6 +20,7 @@ První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vs
 - Tlačítko v horní liště zkouší otočení na šířku/výšku přes Screen Orientation API. Pokud je to nutné, pokusí se přejít na celou obrazovku. Prohlížeč může požadavek odmítnout; ruční otočení vždy zůstává možností.
 - Upozornění na dostupnou aktualizaci je v režimu Soustředění skryté, aby nezabíralo prostor hře. Po návratu do nastavení se opět objeví.
 - V dalších nastaveních lze zvolit 1–4 následující noty. Rozestupy a nástup not se přizpůsobí šířce telefonu; po otočení se zachová poloha právě čtené noty.
+- V pohyblivém režimu se každá další nota plynule objeví až od pravého okraje osnovy. Zvolený počet následujících not určuje jejich rozestupy; už se žádná neodkrývá uprostřed displeje.
 - Manifest + service worker s místní cache pro offline režim po prvním načtení.
 - Viditelné číslo verze u loga a upozornění na připravenou aktualizaci PWA.
 

@@ -16,17 +16,41 @@ const omezTempo = nactiFunkci("omezTempo");
 const jeKompaktniDisplej = nactiFunkci("jeKompaktniDisplej");
 const jenJednaOktava = nactiFunkci("jenJednaOktava", {jeKompaktniDisplej});
 
-test("na úzkém mobilu je první pohyblivá nota vidět hned od začátku", () => {
-  for (const sirka of [280, 320, 360, 390, 430]) {
+test("první pohyblivá nota začíná až za pravým okrajem na výšku i na šířku", () => {
+  for (const sirka of [280, 320, 360, 390, 430, 768, 900, 1536]) {
     for (const nahled of [1, 2, 3, 4]) {
       const {caraX, rozestup, nastup} = rozvrhOsnovy(sirka, nahled);
       const prvniNota = caraX + nastup * rozestup;
-      assert.ok(prvniNota < sirka - 5, `šířka ${sirka}, náhled ${nahled}: nota za okrajem`);
+      const posledniVNahledu = caraX + nahled * rozestup;
+      assert.ok(prvniNota >= sirka + 12, `šířka ${sirka}, náhled ${nahled}: první nota už je na obrazovce`);
+      assert.ok(posledniVNahledu <= sirka - 5, `šířka ${sirka}, náhled ${nahled}: výhled se nevejde`);
       assert.ok(caraX > 100, "čtecí čára ponechává místo pro klíč");
       assert.ok(rozestup >= 39, "noty se nesmí stlačit přes sebe");
-      assert.ok(nastup >= 1.1 && nastup <= 3, "přiměřený nástupní čas");
+      assert.equal(nastup, nahled + 1, "počet dob do příjezdu první noty odpovídá výhledu");
     }
   }
+});
+
+test("další pohyblivá nota vjíždí plynule zprava i před změnou indexu", () => {
+  const sirka = 768;
+  const rozvrh = rozvrhOsnovy(sirka, 1);
+  const viditelnost = [];
+  const cviceni = Array.from({length: 4}, (_, i) => ({
+    stav: "",
+    kresba: {skupina: {
+      setAttribute: (nazev, hodnota) => {
+        if (nazev === "visibility") viditelnost[i] = hodnota;
+      },
+    }, noty: []},
+  }));
+  const posunNot = nactiFunkci("posunNot", {
+    stavSvg: {sirka, ...rozvrh},
+    cviceni, volba: {mode: "moving", preview: 1},
+    index: 0, pozice: rozvrh.nastup + 0.3,
+  });
+  posunNot();
+  assert.equal(viditelnost[2], "visible", "nota, která už vjela zprava, nesmí čekat skrytá na změnu indexu");
+  assert.equal(viditelnost[3], "hidden", "nota daleko za pravým okrajem se nekreslí");
 });
 
 test("větší výhled na stejném displeji přibližuje noty, ne čtecí čáru", () => {

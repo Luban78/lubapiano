@@ -1,6 +1,6 @@
 "use strict";
 
-// LubaPiano 0.1.5.3. All exercise generation and scoring happens on this device.
+// LubaPiano 0.1.5.4. All exercise generation and scoring happens on this device.
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CELKEM = 20;
 const NAZVY = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "B", "H"];
@@ -113,12 +113,14 @@ function jenJednaOktava(sirkaKlaviatury, sirkaOkna, vyskaOkna) {
   return sirkaKlaviatury < 616;
 }
 
-// Na telefonu se noty přizpůsobí šířce. Aktuální nota a zvolený výhled
-// zůstávají čitelné bez horizontálního scrollování.
+// Rozestupy přizpůsobujeme šířce tak, aby se další nota vždy přihnala
+// zpoza pravého okraje, a ne náhle objevila uprostřed osnovy.
 function rozvrhOsnovy(sirka, preview) {
   const caraX = Math.max(104, Math.min(152, sirka * .31));
-  const rozestup = Math.max(39, Math.min(104, (sirka - caraX - 20) / (preview + .35)));
-  const nastup = Math.min(3, Math.max(1.1, (sirka - caraX - 24) / rozestup - .25));
+  const nastup = Math.max(1, Math.min(4, Math.round(preview))) + 1;
+  // U čtecí čáry zbývá místo pro daný počet následujících not.
+  // Další nota (i první nota na startu) začíná za pravým okrajem.
+  const rozestup = Math.max(39, (sirka - caraX + 22) / nastup);
   return {caraX, rozestup, nastup};
 }
 
@@ -238,7 +240,9 @@ function posunNot() {
   for (let i = 0; i < cviceni.length; i += 1) {
     const polozka = cviceni[i];
     const x = stavSvg.caraX + (volba.mode === "moving" ? i + stavSvg.nastup - pozice : i - index) * stavSvg.rozestup;
-    const viditelna = i >= index - 1 && i <= index + volba.preview && x >= -35 && x <= stavSvg.sirka + 35;
+    // V pohybu rozhoduje skutečná poloha: počítadlo náhledu nesmí
+    // další notu náhle odkrýt až uprostřed obrazovky.
+    const viditelna = i >= index - 1 && (volba.mode === "moving" || i <= index + volba.preview) && x >= -35 && x <= stavSvg.sirka + 35;
     polozka.kresba.skupina.setAttribute("visibility", viditelna ? "visible" : "hidden");
     if (!viditelna) continue;
     polozka.kresba.skupina.setAttribute("transform", `translate(${x.toFixed(2)} 0)`);
