@@ -1,5 +1,11 @@
 # LubaPiano – historie verzí
 
+## 0.1.5.5 – výsledky po poslední notě
+
+- Po dokončení všech 20 not se automaticky ukáže výsledkový modal nad osnovou i klaviaturou, včetně režimu Soustředění na šířku.
+- Výsledek ukazuje počet správných a chybných odpovědí, úspěšnost, osobní rekord a oslavu perfektního výsledku.
+- Tlačítko Další cvičení vygeneruje a rovnou spustí nové noty, Zavřít vrátí čistou hrací plochu. Při rozehraném cvičení se nic navíc nezobrazuje.
+
 ## 0.1.5.4 – noty přijíždějí opravdu zprava
 
 - Nové noty v pohyblivém cvičení začínají za pravým okrajem osnovy, i na širokém telefonu na šířku.

@@ -1,6 +1,6 @@
 "use strict";
 
-// LubaPiano 0.1.5.4. All exercise generation and scoring happens on this device.
+// LubaPiano 0.1.5.5. All exercise generation and scoring happens on this device.
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CELKEM = 20;
 const NAZVY = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "B", "H"];
@@ -58,6 +58,15 @@ const ui = {
   midiStatus: document.getElementById("midiStatus"),
   updateNotice: document.getElementById("updateNotice"),
   reload: document.getElementById("reloadButton"),
+  resultOverlay: document.getElementById("resultOverlay"),
+  resultTitle: document.getElementById("resultTitle"),
+  resultSummary: document.getElementById("resultSummary"),
+  resultAccuracy: document.getElementById("resultAccuracy"),
+  resultCorrect: document.getElementById("resultCorrect"),
+  resultWrong: document.getElementById("resultWrong"),
+  resultRecord: document.getElementById("resultRecord"),
+  resultAgain: document.getElementById("resultAgain"),
+  resultClose: document.getElementById("resultClose"),
 };
 
 const volba = {mode: "moving", clef: "treble", answer: "keyboard", error: "continue", tempo: 55, preview: 3, orientation: "auto"};
@@ -302,7 +311,24 @@ function zmenaStatistik() {
   ui.progressFill.style.width = `${index / CELKEM * 100}%`;
 }
 
+function skryjVysledky() {
+  ui.resultOverlay.hidden = true;
+}
+
+function zobrazVysledky(spravne, presnost, rekord, nejlepsi) {
+  ui.resultAccuracy.textContent = `${presnost} %`;
+  ui.resultCorrect.textContent = String(spravne);
+  ui.resultWrong.textContent = String(CELKEM - spravne);
+  ui.resultTitle.textContent = presnost === 100 ? "Dokonalé čtení! 🎉" : presnost >= 80 ? "Skvělá práce! 🎉" : "Cvičení dokončeno! 🎹";
+  ui.resultSummary.textContent = presnost === 100 ? "Všech 20 not na první pokus. Paráda!" : "Každá přečtená nota tě posouvá dál.";
+  ui.resultRecord.hidden = nejlepsi === null;
+  if (nejlepsi !== null) ui.resultRecord.textContent = rekord ? `🏆 Nový osobní rekord: ${nejlepsi} %!` : `🏆 Osobní rekord: ${nejlepsi} %`;
+  ui.resultOverlay.hidden = false;
+  ui.resultAgain.focus({preventScroll: true});
+}
+
 function pripravCviceni() {
+  skryjVysledky();
   panelPozastavilHru = false;
   orientaceGenerovani = window.innerWidth > window.innerHeight;
   cviceni = vygenerujCviceni();
@@ -339,12 +365,15 @@ function konciCviceni() {
   const spravne = cviceni.filter((nota) => nota.stav === "ok").length;
   const presnost = Math.round(spravne / CELKEM * 100);
   let rekord = false;
+  let nejlepsi = null;
   try {
     const data = JSON.parse(localStorage.getItem("lubapiano-postup-01") || "{}");
     rekord = presnost > (data.best || 0);
-    localStorage.setItem("lubapiano-postup-01", JSON.stringify({sessions: (data.sessions || 0) + 1, best: Math.max(data.best || 0, presnost), last: presnost}));
+    nejlepsi = Math.max(data.best || 0, presnost);
+    localStorage.setItem("lubapiano-postup-01", JSON.stringify({sessions: (data.sessions || 0) + 1, best: nejlepsi, last: presnost}));
   } catch { /* Local storage is optional (privacy modes). */ }
   zpetnaVazba(`Hotovo! ${spravne} z ${CELKEM} not správně (${presnost} %).${rekord ? " Nový osobní rekord! 🥳" : ""}`, "good");
+  zobrazVysledky(spravne, presnost, rekord, nejlepsi);
 }
 
 function spustCviceni() {
@@ -731,6 +760,30 @@ function nastavNahled(pocet) {
 }
 
 function pripravOvladani() {
+  ui.resultAgain.addEventListener("click", () => {
+    skryjVysledky();
+    spustCviceni();
+    nastavPanelSoustredeni(false, false);
+  });
+  ui.resultClose.addEventListener("click", () => {
+    skryjVysledky();
+    (jeLandscapeSoustredeni() ? ui.scoreControlsButton : ui.start).focus({preventScroll: true});
+  });
+  document.addEventListener("keydown", (event) => {
+    if (ui.resultOverlay.hidden) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      ui.resultClose.click();
+    } else if (event.key === "Tab") {
+      if (event.shiftKey && document.activeElement === ui.resultAgain) {
+        event.preventDefault();
+        ui.resultClose.focus();
+      } else if (!event.shiftKey && document.activeElement === ui.resultClose) {
+        event.preventDefault();
+        ui.resultAgain.focus();
+      }
+    }
+  });
   document.querySelectorAll("button[data-mode]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("mode", button.dataset.mode)));
   document.querySelectorAll("button[data-clef]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("clef", button.dataset.clef)));
   document.querySelectorAll("button[data-answer]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("answer", button.dataset.answer)));

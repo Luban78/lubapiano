@@ -1,4 +1,4 @@
-# LubaPiano 0.1.5.4
+# LubaPiano 0.1.5.5
 
 První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vstupem z Kurzweil M90.
 
@@ -10,6 +10,7 @@ První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vs
 - Dotyková klaviatura na úzkých displejích ukazuje jednu oktávu bez posouvání a kontroluje jen název noty; fyzický MIDI vstup kontroluje i přesnou oktávu.
 - Při chybě v pohyblivém režimu pokračovat nebo zastavit.
 - 20 not na cvičení, procento správných prvních odpovědí, lokální záznam nejlepšího výsledku.
+- Po dokončení 20 not se v klidném i pohyblivém režimu automaticky otevře výsledkový modal se správnými/chybnými notami, procenty a osobním rekordem. Lze ihned spustit nové cvičení nebo výsledek zavřít. V průběhu hraní zůstává soustředěná plocha bez dalších údajů.
 - Přizpůsobení orientaci displeje a možnost pokusu o její zamknutí.
 - Mobilní režim soustředění využívá plochu displeje pro noty a odpovědi bez scrollování; změny tempa po 5 notách/min jsou dostupné přímo během hraní.
 - Na širokém telefonu v landscape Soustředění vyplňují obrazovku pouze notové osnovy nahoře a vyšší klaviatura dole se dvěma oktávami (14 bílých kláves). Klepnutí kamkoliv do osnovy zobrazí ovládání a stavové údaje jako překryvnou vrstvu; dalším klepnutím se skryjí. Při otevření panelu se běžící pohyblivé noty bezpečně pozastaví, při zavření opět pokračují, pokud je nepozastavil uživatel. Úzký telefon zachovává jednu oktávu.
