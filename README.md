@@ -1,4 +1,4 @@
-# LubaPiano 0.1.5.2
+# LubaPiano 0.1.5.3
 
 První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vstupem z Kurzweil M90.
 
@@ -12,11 +12,11 @@ První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vs
 - 20 not na cvičení, procento správných prvních odpovědí, lokální záznam nejlepšího výsledku.
 - Přizpůsobení orientaci displeje a možnost pokusu o její zamknutí.
 - Mobilní režim soustředění využívá plochu displeje pro noty a odpovědi bez scrollování; změny tempa po 5 notách/min jsou dostupné přímo během hraní.
-- Na širokém telefonu vyplňuje osnova celou dostupnou šířku nahoře, klaviatura má dole dvě oktávy (14 bílých kláves). Spuštění, pauza, nové noty a rychlé tempo jsou v horní liště. Úzký telefon zachovává jednu oktávu.
+- Na širokém telefonu v landscape Soustředění vyplňují obrazovku pouze notové osnovy nahoře a vyšší klaviatura dole se dvěma oktávami (14 bílých kláves). Klepnutí kamkoliv do osnovy zobrazí ovládání a stavové údaje jako překryvnou vrstvu; dalším klepnutím se skryjí. Při otevření panelu se běžící pohyblivé noty bezpečně pozastaví, při zavření opět pokračují, pokud je nepozastavil uživatel. Úzký telefon zachovává jednu oktávu.
 - Režim **Střídat** zobrazuje obě osnovy, ale na každém kroku jen jednu notu v jednom náhodně vybraném klíči. Přibližně polovina not připadá na každou osnovu. Dotykem stačí odpovědět jednou; MIDI stále hlídá přesnou oktávu. Současnou hru obou rukou si necháváme na samostatný pokročilý režim.
 - Pro dvojitou osnovu v landscape se generují noty uvnitř pětilinkových osnov, aby nepřekážely pomocné linky. Na výšku zůstává i C4 pod houslovou osnovou. Při otočení před spuštěním se připraví nová série pro aktuální orientaci; rozjetá série se nepřeruší.
 - Obě osnovy mají od sebe bezpečnou mezeru, zmenšené samostatné symboly klíčů a automatickou rozteč podle výšky. Na úzkém mobilu jsou ovladače tří klíčů přes celou šířku nastavení.
-- Nožičky ve dvojité osnově jsou delší. Na šířku je stavový proužek pod osnovami, nikoli přes noty nebo pomocné linky.
+- Nožičky ve dvojité osnově jsou delší. V landscape Soustředění je stavový proužek skrytý a objeví se jen s ovládáním; v běžném rozložení zůstává pod osnovami.
 - Tlačítko v horní liště zkouší otočení na šířku/výšku přes Screen Orientation API. Pokud je to nutné, pokusí se přejít na celou obrazovku. Prohlížeč může požadavek odmítnout; ruční otočení vždy zůstává možností.
 - Upozornění na dostupnou aktualizaci je v režimu Soustředění skryté, aby nezabíralo prostor hře. Po návratu do nastavení se opět objeví.
 - V dalších nastaveních lze zvolit 1–4 následující noty. Rozestupy a nástup not se přizpůsobí šířce telefonu; po otočení se zachová poloha právě čtené noty.

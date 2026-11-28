@@ -1,6 +1,6 @@
 "use strict";
 
-// LubaPiano 0.1.5.2. All exercise generation and scoring happens on this device.
+// LubaPiano 0.1.5.3. All exercise generation and scoring happens on this device.
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CELKEM = 20;
 const NAZVY = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "B", "H"];
@@ -23,6 +23,7 @@ const DOLE = HORE + 4 * VYSKA_LINKY;
 const ui = {
   shell: document.querySelector(".app-shell"),
   svg: document.getElementById("musicSheet"),
+  scoreControlsButton: document.getElementById("scoreControlsButton"),
   feedback: document.getElementById("feedback"),
   progress: document.getElementById("progressText"),
   progressFill: document.getElementById("progressFill"),
@@ -77,6 +78,7 @@ let midiAktivni = new Set();
 let soustredeniRucne = false;
 let fullscreenKvuliOtoceni = false;
 let orientaceGenerovani = null;
+let panelPozastavilHru = false;
 
 function svg(tag, atributy = {}, text = "") {
   const el = document.createElementNS(SVG_NS, tag);
@@ -297,6 +299,7 @@ function zmenaStatistik() {
 }
 
 function pripravCviceni() {
+  panelPozastavilHru = false;
   orientaceGenerovani = window.innerWidth > window.innerHeight;
   cviceni = vygenerujCviceni();
   index = 0;
@@ -655,7 +658,30 @@ async function pripojMidi() {
   }
 }
 
+function jeLandscapeSoustredeni() {
+  return ui.shell.classList.contains("focus") && window.innerWidth >= 560 && window.innerWidth > window.innerHeight && window.innerHeight <= 650;
+}
+
+function nastavPanelSoustredeni(otevrit, obnovitHru = true) {
+  const zobrazit = otevrit && jeLandscapeSoustredeni();
+  const byloOtevreno = ui.shell.classList.contains("controls-open");
+  if (zobrazit && !byloOtevreno && bezi && volba.mode === "moving") {
+    // Otevření ovládání nezpůsobí zmeškané noty, hra se bezpečně zastaví.
+    pauza();
+    panelPozastavilHru = true;
+  }
+  if (!zobrazit && panelPozastavilHru) {
+    // Zavření panelu vrátí pohyb pouze tehdy, když jej pozastavil sám panel.
+    if (obnovitHru && rucnePozastaveno && spusteno && !hotovo && !cekamNaOpravu) pauza();
+    panelPozastavilHru = false;
+  }
+  ui.shell.classList.toggle("controls-open", zobrazit);
+  ui.scoreControlsButton.setAttribute("aria-expanded", String(zobrazit));
+  ui.scoreControlsButton.setAttribute("aria-label", zobrazit ? "Skrýt ovládání a pokračovat" : "Zobrazit ovládání cvičení");
+}
+
 function nastavSoustredeni(aktivni) {
+  nastavPanelSoustredeni(false, false);
   ui.shell.classList.toggle("focus", aktivni);
   ui.focus.setAttribute("aria-pressed", String(aktivni));
   ui.focus.title = aktivni ? "Zobrazit celé ovládání" : "Soustředěný režim";
@@ -671,7 +697,7 @@ function nastavSoustredeni(aktivni) {
 function prelozTempo() {
   // Na krátké landscape obrazovce patří rychlost do horní lišty.
   // Díky tomu zůstane maximum místa pro osnovu nad celou klaviaturou.
-  const naSirku = ui.shell.classList.contains("focus") && window.innerWidth >= 560 && window.innerWidth > window.innerHeight && window.innerHeight <= 650;
+  const naSirku = jeLandscapeSoustredeni();
   const cil = naSirku ? ui.topActions : ui.practiceHeadingRight;
   if (ui.quickTempo.parentElement !== cil) {
     if (naSirku) cil.prepend(ui.quickTempo);
@@ -711,9 +737,18 @@ function pripravOvladani() {
   ui.tempoMinus.addEventListener("click", () => nastavTempo(volba.tempo - 5));
   ui.tempoPlus.addEventListener("click", () => nastavTempo(volba.tempo + 5));
   ui.preview.addEventListener("input", () => nastavNahled(Number(ui.preview.value)));
-  ui.start.addEventListener("click", spustCviceni);
-  ui.pause.addEventListener("click", pauza);
+  ui.start.addEventListener("click", () => {
+    spustCviceni();
+    nastavPanelSoustredeni(false, false);
+  });
+  ui.pause.addEventListener("click", () => {
+    pauza();
+    if (bezi) nastavPanelSoustredeni(false, false);
+  });
   ui.next.addEventListener("click", pripravCviceni);
+  ui.scoreControlsButton.addEventListener("click", () => {
+    nastavPanelSoustredeni(!ui.shell.classList.contains("controls-open"));
+  });
   ui.midi.addEventListener("click", () => void pripojMidi());
   ui.focus.addEventListener("click", () => {
     soustredeniRucne = true;
@@ -721,6 +756,7 @@ function pripravOvladani() {
     nastavSoustredeni(!ui.shell.classList.contains("focus"));
   });
   window.addEventListener("resize", () => {
+    if (!jeLandscapeSoustredeni()) nastavPanelSoustredeni(false, false);
     prelozTempo();
     // Před začátkem nové série vždy připrav vhodný rozsah pro aktuální
     // orientaci. Rozjeté cvičení při otočení nikdy nepřerušujeme.

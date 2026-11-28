@@ -1,5 +1,12 @@
 # LubaPiano – historie verzí
 
+## 0.1.5.3 – soustředění jen na noty a klávesy
+
+- Na šířku v režimu Soustředění není při hraní vidět žádné tlačítko, tempo, hlášení ani statistika. Osnova se protáhne nahoru, klaviatura je vyšší a obě zabírají celou šířku displeje.
+- Klepnutí kamkoliv do osnovy odkryje ovládání a zpětnou vazbu v překryvné vrstvě; další klepnutí je schová. Začít nebo Pokračovat panel také automaticky schová.
+- Otevření ovládání během pohyblivého cvičení pozastaví časování, aby nepřijely zmeškané noty. Zavření ho obnoví jen tehdy, když hru pozastavil právě tento panel.
+- Režim na výšku a běžné zobrazení zůstávají beze změn.
+
 ## 0.1.5.2 – na mobilu střídáme klíče
 
 - Při zvolených obou osnovách se náhodně střídá **jediná nota** mezi houslovým a basovým klíčem. Každá dvacítka má deset not z každého klíče; stačí jeden dotyk, MIDI také čeká jeden přesný tón.
