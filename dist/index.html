@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#082630" />
   <meta name="description" content="LubaPiano – uč se poznávat noty, číst dopředu a hrát na skutečném pianu." />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>LubaPiano 0.1.5.6 · Čti noty, hraj hudbu</title>
+  <title>LubaPiano 0.1.6.0 · Akademie čtení not</title>
   <link rel="icon" href="./icons/lubapiano.svg" type="image/svg+xml" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./style.css" />
@@ -18,7 +18,7 @@
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">♫</div>
         <div>
-          <h1>Luba<span>Piano</span><small class="brand-version">0.1.5.6</small></h1>
+          <h1>Luba<span>Piano</span><small class="brand-version">0.1.6.0</small></h1>
           <p>Čti noty. Hraj hudbu.</p>
         </div>
       </div>
@@ -33,6 +33,38 @@
     </div>
 
     <main>
+      <nav class="learning-switch" aria-label="Způsob učení">
+        <button type="button" data-learning="academy" aria-pressed="true">🎓 Akademie</button>
+        <button type="button" data-learning="free" aria-pressed="false">🎹 Volný trénink</button>
+      </nav>
+      <section class="academy-panel" id="academyPanel" aria-labelledby="academyTitle">
+        <div class="academy-heading">
+          <div>
+            <p class="eyebrow">TVŮJ OSOBNÍ UČITEL</p>
+            <h2 id="academyTitle">Od první noty 🎓</h2>
+          </div>
+          <span id="academyOverview" class="academy-overview">0 / 4 lekcí</span>
+        </div>
+        <p class="academy-lead">Každá lekce má svůj čas. Trénuj bez stresu, pak si znalosti ověř ve dvou samostatných bezchybných zkouškách.</p>
+        <div class="academy-lessons" id="academyLessons" aria-label="Výukové lekce"></div>
+        <div class="academy-guide" aria-live="polite">
+          <p class="eyebrow">CO TI ŘÍKÁ UČITEL</p>
+          <h3 id="academyLessonTitle">Lekce 1</h3>
+          <p id="academyCoach">Začínáme od nuly.</p>
+          <div class="academy-mastered" id="academyMastered">Bezchybné zkoušky: 0 / 2</div>
+        </div>
+        <div class="academy-start">
+          <button type="button" id="lessonPractice" class="primary-button">Procvičovat 🎹</button>
+          <button type="button" id="lessonExam" class="secondary-button">Zkouška 🎓</button>
+        </div>
+        <div class="academy-answer">
+          <span>Na mobilu odpovídat:</span>
+          <div class="segmented" role="group" aria-label="Odpověď při výuce">
+            <button class="segment" data-academy-answer="keyboard" type="button" aria-pressed="true">Klaviaturou</button>
+            <button class="segment" data-academy-answer="names" type="button" aria-pressed="false">Názvem noty</button>
+          </div>
+        </div>
+      </section>
       <section class="setup-card" aria-label="Nastavení cvičení" id="setupCard">
         <div class="setup-grid">
           <fieldset class="control-group">
@@ -159,7 +191,7 @@
         <button id="midiButton" type="button" class="midi-button">Připojit MIDI</button>
       </section>
 
-      <footer class="footer">LubaPiano 0.1.5.6 · Tvůj postup zůstává v tomto zařízení · Offline po načtení aplikace</footer>
+      <footer class="footer">LubaPiano 0.1.6.0 · Tvůj postup zůstává v tomto zařízení · Offline po načtení aplikace</footer>
     </main>
   </div>
 

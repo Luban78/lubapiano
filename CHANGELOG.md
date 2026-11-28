@@ -1,5 +1,13 @@
 # LubaPiano – historie verzí
 
+## 0.1.6.0 – první LubaPiano Akademie
+
+- Dvě vstupní cesty: Akademie pro úplné začátečníky a dosavadní Volný trénink s původními nastaveními.
+- Čtyři postupné lekce houslového klíče s vysvětlením polohy not a uzamčením následující lekce do zvládnutí předchozí.
+- Volné procvičování bez časového tlaku a samostatná 20notová zkouška, která pro postup vyžaduje dvě bezchybné náhodné série.
+- Po každém výsledku učitel doporučí další krok a při chybách připomene problematické noty. Uložený postup Akademie má vlastní klíč localStorage; rekord Volného tréninku zůstává nedotčen.
+- Mobilní hráč se nadále může soustředit jen na noty a klaviaturu; MIDI vstup, přepínání orientace a offline PWA zůstávají funkční.
+
 ## 0.1.5.6 – přesné oktávy, MIDI plocha a hladší pohyb
 
 - Tlačítko Zavřít ve výsledkovém modalu opustí Soustředění a zobrazí běžné ovládání. Další cvičení dál spustí nový trénink bez rušení.

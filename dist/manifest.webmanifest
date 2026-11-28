@@ -1,7 +1,7 @@
 {
   "name": "LubaPiano – čti noty, hraj hudbu",
   "short_name": "LubaPiano",
-  "description": "Trénink čtení not, pohyblivé noty a MIDI piano.",
+  "description": "Osobní Akademie čtení not od nuly, volný trénink a připojení MIDI piana.",
   "id": "./lubapiano-pwa",
   "start_url": "./",
   "scope": "./",

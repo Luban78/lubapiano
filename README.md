@@ -1,9 +1,11 @@
-# LubaPiano 0.1.5.6
+# LubaPiano 0.1.6.0
 
 První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vstupem z Kurzweil M90.
 
 ## Rozsah v0.1
 
+- **Akademie** je výchozí obrazovka výuky od úplných základů. První čtyři postupné lekce houslového klíče mají vlastní rozsahy not a vysvětlení. Každou lze neomezeně procvičovat bez časového limitu; k odemčení následující lekce jsou potřeba dvě samostatné zkoušky po 20 notách s výsledkem 100 %. Zkoušky dávají nové náhodné pořadí a hodnotí první pokus, chyby ve cvičení nejsou trestány. Pokrok Akademie se ukládá samostatně pouze do localStorage tohoto zařízení.
+- Přepínač **Volný trénink** zachovává veškeré dosavadní režimy, včetně pohyblivých not, obou klíčů, osobního rekordu a MIDI. Návrat z Akademie obnoví nastavení volného tréninku.
 - Houslový, basový nebo obě osnovy najednou (mobilní trénink náhodného střídání klíčů).
 - Klidný režim a pohyblivé noty s nastavitelným tempem 20–140 not/min.
 - Odpověď názvem noty nebo virtuální klaviaturou; USB MIDI funguje v obou režimech.
@@ -37,6 +39,7 @@ První offline-first PWA pro trénink poznávání not s volitelným USB MIDI vs
 
 ## Zatím není součástí
 
+- Pokročilý adaptivní výběr slabých not, opakování v dalších dnech a navazující lekce basového klíče a rytmu. V první Akademii je učitel řízený jednoduchými, zcela offline pravidly; nejde o konverzační AI.
 - Skutečné akordy a rytmická souhra obou rukou, skladby / MusicXML a LubaLevel.
 - Časový rytmus rozličných hodnot not (v0.1 všechny noty trvají jednu dobu).
 - Automatické rozpoznání oktávy v režimu názvů (tam se zkouší jen název noty).

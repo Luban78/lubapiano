@@ -1,6 +1,6 @@
 "use strict";
 
-// LubaPiano 0.1.5.6. All exercise generation and scoring happens on this device.
+// LubaPiano 0.1.6.0. All exercise generation, teaching and scoring happens on this device.
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CELKEM = 20;
 const NAZVY = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "B", "H"];
@@ -19,9 +19,27 @@ const BILE = new Set([0, 2, 4, 5, 7, 9, 11]);
 const VYSKA_LINKY = 17;
 const HORE = 64;
 const DOLE = HORE + 4 * VYSKA_LINKY;
+// První kapitola Akademie: záměrně začíná notami přímo na osnově.
+// Další kapitoly (basový klíč a rytmus) přidáme samostatně.
+const LEKCE = [
+  {nazev: "První tři noty", noty: [64, 65, 67], rada: "Začneme u spodní linky houslové osnovy. E4 leží na spodní lince, F4 v mezeře nad ní a G4 na druhé lince. Sleduj, jak se hlavička noty posouvá."},
+  {nazev: "O dvě výš", noty: [64, 65, 67, 69, 71], rada: "Přidáme A4 a H4. A4 leží ve druhé mezeře, H4 na prostřední lince. Před stiskem se podívej, jestli je hlavička na lince, nebo v mezeře."},
+  {nazev: "Horní část osnovy", noty: [64, 65, 67, 69, 71, 72, 74, 76, 77], rada: "Teď přibude C5, D5, E5 a F5. Hledej noty podle jejich polohy, nepočítej pokaždé linky od začátku."},
+  {nazev: "Noty pod osnovou", noty: [60, 62, 64, 65, 67, 69, 71, 72], rada: "Poznáš C4 na pomocné lince a D4 těsně pod osnovou? Zamíchej je s notami, které už znáš."},
+];
+const AKADEMIE_KLIC = "lubapiano-akademie-01";
 
 const ui = {
   shell: document.querySelector(".app-shell"),
+  practiceTitle: document.getElementById("practiceTitle"),
+  academyPanel: document.getElementById("academyPanel"),
+  academyLessons: document.getElementById("academyLessons"),
+  academyOverview: document.getElementById("academyOverview"),
+  academyLessonTitle: document.getElementById("academyLessonTitle"),
+  academyCoach: document.getElementById("academyCoach"),
+  academyMastered: document.getElementById("academyMastered"),
+  lessonPractice: document.getElementById("lessonPractice"),
+  lessonExam: document.getElementById("lessonExam"),
   svg: document.getElementById("musicSheet"),
   scoreControlsButton: document.getElementById("scoreControlsButton"),
   feedback: document.getElementById("feedback"),
@@ -88,6 +106,130 @@ let soustredeniRucne = false;
 let fullscreenKvuliOtoceni = false;
 let orientaceGenerovani = null;
 let panelPozastavilHru = false;
+let akademieAktivni = false;
+let vybranaLekce = 0;
+let lekceRezim = "practice";
+let volnaNastaveni = {...volba};
+let postupAkademie = nactiPostupAkademie();
+
+function nactiPostupAkademie() {
+  try {
+    const ulozene = JSON.parse(localStorage.getItem(AKADEMIE_KLIC) || "{}");
+    const zkousky = Array.isArray(ulozene.zkousky) ? ulozene.zkousky : [];
+    return {zkousky: LEKCE.map((_, i) => Number.isInteger(zkousky[i]) ? Math.max(0, Math.min(2, zkousky[i])) : 0)};
+  } catch { return {zkousky: LEKCE.map(() => 0)}; }
+}
+
+function ulozPostupAkademie() {
+  try {
+    localStorage.setItem(AKADEMIE_KLIC, JSON.stringify(postupAkademie));
+    return true;
+  } catch { return false; }
+}
+
+function lekceOdemcena(cislo) {
+  return cislo === 0 || postupAkademie.zkousky[cislo - 1] === 2;
+}
+
+function vykresliAkademii() {
+  ui.academyLessons.replaceChildren();
+  LEKCE.forEach((lekce, i) => {
+    const hotova = postupAkademie.zkousky[i] === 2;
+    const tlacitko = document.createElement("button");
+    tlacitko.type = "button";
+    tlacitko.className = "academy-lesson";
+    tlacitko.disabled = !lekceOdemcena(i);
+    if (i === vybranaLekce) tlacitko.setAttribute("aria-current", "step");
+    const nazev = document.createElement("strong");
+    nazev.textContent = `${hotova ? "✓" : tlacitko.disabled ? "🔒" : "♫"} Lekce ${i + 1}`;
+    const podtitulek = document.createElement("span");
+    podtitulek.textContent = lekce.nazev;
+    tlacitko.append(nazev, podtitulek);
+    tlacitko.addEventListener("click", () => vyberLekci(i));
+    ui.academyLessons.append(tlacitko);
+  });
+  const hotovych = postupAkademie.zkousky.filter((p) => p === 2).length;
+  ui.academyOverview.textContent = `${hotovych} / ${LEKCE.length} lekcí`;
+  ui.academyLessonTitle.textContent = `Lekce ${vybranaLekce + 1}: ${LEKCE[vybranaLekce].nazev}`;
+  ui.academyMastered.textContent = postupAkademie.zkousky[vybranaLekce] === 2
+    ? "✓ Lekce zvládnuta — můžeš se k ní kdykoli vrátit"
+    : `Bezchybné zkoušky: ${postupAkademie.zkousky[vybranaLekce]} / 2`;
+}
+
+function vyberLekci(cislo) {
+  if (!lekceOdemcena(cislo)) return;
+  vybranaLekce = cislo;
+  lekceRezim = "practice";
+  ui.academyCoach.textContent = LEKCE[cislo].rada;
+  vykresliAkademii();
+  pripravCviceni();
+}
+
+function prepniVyuku(rezim) {
+  const novaAkademie = rezim === "academy";
+  if (novaAkademie !== akademieAktivni) {
+    if (novaAkademie) {
+      volnaNastaveni = {...volba};
+      Object.assign(volba, {mode: "still", clef: "treble", answer: "keyboard"});
+      vybranaLekce = postupAkademie.zkousky.findIndex((p) => p < 2);
+      if (vybranaLekce < 0) vybranaLekce = LEKCE.length - 1;
+      lekceRezim = "practice";
+    } else {
+      Object.assign(volba, volnaNastaveni);
+    }
+    akademieAktivni = novaAkademie;
+  }
+  bezi = false;
+  if (ui.shell.classList.contains("focus")) nastavSoustredeni(false);
+  ui.shell.classList.toggle("academy-mode", akademieAktivni);
+  document.querySelectorAll("button[data-learning]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.learning === rezim)));
+  for (const typ of ["mode", "clef", "answer"]) vyberTlacitko(typ, volba[typ]);
+  document.querySelectorAll("button[data-academy-answer]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.academyAnswer === volba.answer)));
+  vykresliAkademii();
+  ui.academyCoach.textContent = LEKCE[vybranaLekce].rada;
+  vytvorKlaviaturu();
+  vytvorNazvy();
+  prepniOdpoved();
+  pripravCviceni();
+}
+
+function spustLekci(rezim) {
+  if (!akademieAktivni) return;
+  lekceRezim = rezim;
+  pripravCviceni();
+  soustredeniRucne = false;
+  spustCviceni();
+}
+
+function vyhodnotLekci(spravne, presnost) {
+  if (!akademieAktivni) return;
+  const zkouska = lekceRezim === "exam";
+  let ulozeno = true;
+  if (zkouska && presnost === 100 && postupAkademie.zkousky[vybranaLekce] < 2) {
+    postupAkademie.zkousky[vybranaLekce] += 1;
+    ulozeno = ulozPostupAkademie();
+  }
+  const hotova = postupAkademie.zkousky[vybranaLekce] === 2;
+  const dalsi = hotova && vybranaLekce + 1 < LEKCE.length;
+  const spatneNoty = [...new Set(cviceni.filter((n) => n.stav !== "ok").map((n) => jmenoBezOktavy(n.midi)))];
+  if (!zkouska) {
+    ui.resultTitle.textContent = "První krok za tebou! 🎹";
+    ui.resultSummary.textContent = `Procvičeno ${spravne} z ${CELKEM} not. Až budeš připravený, zkus si bez časového tlaku zkoušku.`;
+    ui.resultAgain.textContent = "Přejít ke zkoušce 🎓";
+  } else if (presnost < 100) {
+    ui.resultTitle.textContent = "Tohle ještě doladíme ❤️";
+    ui.resultSummary.textContent = `K odemčení potřebuješ bezchybnou zkoušku. ${spatneNoty.length ? `Zkus zopakovat: ${spatneNoty.join(", ")}.` : "Zkus to znovu."} Nikam nespěcháme.`;
+    ui.resultAgain.textContent = "Zkusit zkoušku znovu";
+  } else {
+    ui.resultTitle.textContent = hotova ? "Lekce zvládnuta! 🏆" : "Bezchybná zkouška! 🥳";
+    ui.resultSummary.textContent = hotova ? "Dvě samostatné bezchybné zkoušky! Další lekce je odemčená." : "Paráda! Jednu bezchybnou zkoušku máš. Ještě druhá, s jiným pořadím not.";
+    ui.resultAgain.textContent = dalsi ? "Další lekce 🎹" : hotova ? "Procvičit znovu" : "Druhá zkouška 🎓";
+  }
+  if (!ulozeno) ui.resultSummary.textContent += " Pozor: prohlížeč neumožnil uložit postup.";
+  ui.resultRecord.hidden = true;
+  ui.academyCoach.textContent = ui.resultSummary.textContent;
+  vykresliAkademii();
+}
 
 function svg(tag, atributy = {}, text = "") {
   const el = document.createElementNS(SVG_NS, tag);
@@ -305,7 +447,9 @@ function vygenerujCviceni() {
   let predminula = -1;
   for (let i = 0; i < CELKEM; i += 1) {
     const klic = dvojita ? klice[i] : volba.clef;
-    const rozsah = rozsahProCviceni(klic, dvojita, naSirku);
+    const rozsah = typeof akademieAktivni !== "undefined" && akademieAktivni
+      ? LEKCE[vybranaLekce].noty
+      : rozsahProCviceni(klic, dvojita, naSirku);
     let nova = rozsah[Math.floor(Math.random() * rozsah.length)];
     let pokusy = 0;
     while ((nova === minula || (nova === predminula && Math.random() < .7)) && pokusy < 15) {
@@ -363,16 +507,17 @@ function pripravCviceni() {
   rucnePozastaveno = false;
   cekamNaOpravu = false;
   hotovo = false;
-  ui.start.textContent = "Začít cvičení";
+  ui.start.textContent = akademieAktivni ? lekceRezim === "exam" ? "Začít zkoušku" : "Začít procvičování" : "Začít cvičení";
   ui.start.disabled = false;
   ui.pause.disabled = true;
   ui.pause.textContent = "Pauza";
+  ui.practiceTitle.textContent = akademieAktivni ? `Lekce ${vybranaLekce + 1}: ${LEKCE[vybranaLekce].nazev}` : "Poznávání not";
   ui.clefCaption.textContent = volba.clef === "both" ? "𝄞 + 𝄢 Střídání klíčů" : volba.clef === "treble" ? "𝄞 Houslový klíč" : "𝄢 Basový klíč";
   ui.modeCaption.textContent = volba.mode === "moving" ? "Noty přijíždějí zprava" : "Noty čekají na odpověď";
-  ui.instructions.textContent = volba.clef === "both" ? "Sleduj obě osnovy. Pokaždé zahraj jen jednu notu z právě aktivního klíče." : volba.mode === "moving" ? "Hraj u modré čáry. Očima už sleduj i další noty." : "Zahraj zvýrazněnou notu. Další přijde po tvé odpovědi.";
+  ui.instructions.textContent = akademieAktivni ? lekceRezim === "exam" ? "Zkouška: dvacet náhodných not. Na první pokus musí být všechny správně. Bez časového tlaku." : "Trénink: hraj zvýrazněnou notu. Když se spleteš, nic se neděje — zkus to znovu." : volba.clef === "both" ? "Sleduj obě osnovy. Pokaždé zahraj jen jednu notu z právě aktivního klíče." : volba.mode === "moving" ? "Hraj u modré čáry. Očima už sleduj i další noty." : "Zahraj zvýrazněnou notu. Další přijde po tvé odpovědi.";
   zmenaStatistik();
   vykresliOsnovu();
-  zpetnaVazba("Připraveno. Stiskni „Začít“ a hraj.");
+  zpetnaVazba(akademieAktivni ? (lekceRezim === "exam" ? "Připraven na zkoušku. Žádný spěch. 🎓" : "Učíme se spolu. Klidně si dej na čas. ❤️") : "Připraveno. Stiskni „Začít“ a hraj.");
 }
 
 function konciCviceni() {
@@ -397,6 +542,7 @@ function konciCviceni() {
   } catch { /* Local storage is optional (privacy modes). */ }
   zpetnaVazba(`Hotovo! ${spravne} z ${CELKEM} not správně (${presnost} %).${rekord ? " Nový osobní rekord! 🥳" : ""}`, "good");
   zobrazVysledky(spravne, presnost, rekord, nejlepsi);
+  if (typeof vyhodnotLekci === "function") vyhodnotLekci(spravne, presnost);
 }
 
 function spustCviceni() {
@@ -793,13 +939,23 @@ function nastavNahled(pocet) {
 function pripravOvladani() {
   ui.resultAgain.addEventListener("click", () => {
     skryjVysledky();
+    if (akademieAktivni) {
+      if (lekceRezim === "practice") lekceRezim = "exam";
+      else if (postupAkademie.zkousky[vybranaLekce] === 2) {
+        if (vybranaLekce + 1 < LEKCE.length) vybranaLekce += 1;
+        lekceRezim = "practice";
+        ui.academyCoach.textContent = LEKCE[vybranaLekce].rada;
+        vykresliAkademii();
+      }
+      pripravCviceni();
+    }
     spustCviceni();
     nastavPanelSoustredeni(false, false);
   });
   ui.resultClose.addEventListener("click", () => {
     skryjVysledky();
     if (ui.shell.classList.contains("focus")) nastavSoustredeni(false);
-    ui.start.focus({preventScroll: true});
+    (akademieAktivni ? ui.lessonPractice : ui.start).focus({preventScroll: true});
   });
   document.addEventListener("keydown", (event) => {
     if (ui.resultOverlay.hidden) return;
@@ -817,6 +973,13 @@ function pripravOvladani() {
     }
   });
   document.querySelectorAll("button[data-mode]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("mode", button.dataset.mode)));
+  document.querySelectorAll("button[data-learning]").forEach((button) => button.addEventListener("click", () => prepniVyuku(button.dataset.learning)));
+  document.querySelectorAll("button[data-academy-answer]").forEach((button) => button.addEventListener("click", () => {
+    zmenNastaveni("answer", button.dataset.academyAnswer);
+    document.querySelectorAll("button[data-academy-answer]").forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+  }));
+  ui.lessonPractice.addEventListener("click", () => spustLekci("practice"));
+  ui.lessonExam.addEventListener("click", () => spustLekci("exam"));
   document.querySelectorAll("button[data-clef]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("clef", button.dataset.clef)));
   document.querySelectorAll("button[data-answer]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("answer", button.dataset.answer)));
   document.querySelectorAll("button[data-error]").forEach((button) => button.addEventListener("click", () => zmenNastaveni("error", button.dataset.error)));
@@ -877,3 +1040,4 @@ vytvorKlaviaturu();
 vytvorNazvy();
 prepniOdpoved();
 pripravCviceni();
+prepniVyuku("academy");
